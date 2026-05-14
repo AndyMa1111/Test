@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字命理分析</title>
+<style>
+  /* ======= 全局 ======= */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text2: #555;
+    --border: #e0e0e0;
+    --accent: #c0392b;
+    --accent2: #e74c3c;
+    --gold: #8b6914;
+    --yin: #3498db;
+    --yang: #e74c3c;
+    --wood: #27ae60;
+    --fire: #e74c3c;
+    --earth: #f39c12;
+    --metal: #7f8c8d;
+    --water: #2980b9;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  html { font-size: 15px; }
+  body {
+    font-family: -apple-system, "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ======= Layout ======= */
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* ======= Header ======= */
+  header {
+    text-align: center;
+    padding: 40px 0 30px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--text);
+  }
+  header h1 .accent { color: var(--accent); }
+  header p {
+    color: var(--text2);
+    font-size: 0.92rem;
+    margin-top: 4px;
+  }
+
+  /* ======= Card ======= */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+    color: var(--text);
+  }
+
+  /* ======= Form ======= */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #fff;
+    color: var(--text);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+  }
+  .btn-analyze {
+    grid-column: 1 / -1;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 2px;
+  }
+  .btn-analyze:hover { background: var(--accent2); }
+  .btn-analyze:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  /* ======= Bazi Display ======= */
+  .bazi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .bazi-cell {
+    text-align: center;
+    padding: 12px 8px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+  }
+  .bazi-cell .pillar-name {
+    font-size: 0.78rem;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .bazi-cell .gan {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .bazi-cell .zhi {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .bazi-cell .shi-shen {
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .bazi-cell .yy {
+    font-size: 0.75rem;
+    margin-top: 2px;
+  }
+  .bazi-cell .yy.yang { color: var(--yang); }
+  .bazi-cell .yy.yin { color: var(--yin); }
+  .bazi-cell .yy-label { font-size: 0.7rem; color: var(--text2); }
+  .bazi-cell.day-cell { border-color: var(--accent); background: #fff5f5; }
+  .bazi-cell.day-cell .gan, .bazi-cell.day-cell .zhi { color: var(--accent); }
+
+  /* ======= Sections ======= */
+  .section { margin: 16px 0; }
+  .section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section p, .section li { color: var(--text); }
+  table.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  table.info-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.info-table td:first-child {
+    color: var(--text2);
+    width: 120px;
+    font-weight: 500;
+  }
+
+  /* ======= Tags ======= */
+  .tag { 
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin: 2px;
+  }
+  .tag-木 { background: #d4edda; color: #155724; }
+  .tag-火 { background: #f8d7da; color: #721c24; }
+  .tag-土 { background: #fff3cd; color: #856404; }
+  .tag-金 { background: #e2e3e5; color: #383d41; }
+  .tag-水 { background: #d1ecf1; color: #0c5460; }
+  .tag-旺 { background: #dc3545; color: #fff; }
+  .tag-相 { background: #ffc107; color: #212529; }
+  .tag-休 { background: #6c757d; color: #fff; }
+  .tag-囚 { background: #28a745; color: #fff; }
+  .tag-死 { background: #343a40; color: #fff; }
+
+  /* ======= Luck Cycle ======= */
+  .luck-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .luck-table th {
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 6px;
+    font-weight: 500;
+    font-size: 0.82rem;
+  }
+  .luck-table td {
+    padding: 7px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .luck-table tr:nth-child(even) { background: #fafafa; }
+  .luck-table .current-luck { background: #fff5f5 !important; font-weight: 600; }
+
+  /* ======= Loader ======= */
+  .loader {
+    display: none;
+    text-align: center;
+    padding: 40px;
+  }
+  .loader.active { display: block; }
+  .loader .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader p { color: var(--text2); }
+
+  /* ======= Result ======= */
+  #result { display: none; }
+  #result.active { display: block; }
+
+  /* ======= Report ======= */
+  .report-card { border: 2px solid var(--accent); }
+  .report-title { color: var(--accent); font-size: 1.15rem; }
+  .report-section { margin: 18px 0; }
+  .report-section:first-child { margin-top: 0; }
+  .report-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+  }
+  .report-section-title .severity-critical {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .report-content {
+    font-size: 0.92rem;
+    line-height: 1.9;
+    color: var(--text);
+  }
+  .report-content p {
+    margin: 6px 0;
+    padding-left: 4px;
+    border-left: 3px solid transparent;
+  }
+  .report-content p.critical {
+    border-left-color: var(--accent);
+    background: #fff5f5;
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+
+  /* ======= Tiao Hou ======= */
+  .tiaohou-quote {
+    background: #fef9ef;
+    border-left: 4px solid var(--gold);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 0.92rem;
+    line-height: 1.8;
+  }
+
+  /* ======= Zang Gan ======= */
+  .zg-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .zg-cell {
+    text-align: center;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+  .zg-cell .zg-zhi { font-weight: 600; font-size: 1.1rem; }
+  .zg-cell .zg-item { margin: 2px 0; color: var(--text2); }
+  .zg-cell .zg-item .the-god { color: var(--accent); font-weight: 500; }
+
+  /* ======= Footer ======= */
+  footer {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text2);
+    font-size: 0.82rem;
+  }
+
+  /* ======= Responsive ======= */
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .bazi-grid, .zg-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .bazi-cell .gan, .bazi-cell .zhi { font-size: 1.5rem; }
+    .card { padding: 18px; }
+  }
+
+  /* 错误消息 */
+  .error-msg {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 0.9rem;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    font-size: 0.78rem;
+    color: var(--text2);
+    text-align: center;
+    margin-top: 16px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <header>
+    <h1>🔮 <span class="accent">八字</span>命理分析</h1>
+    <p>四柱排盘 · 十神 · 藏干 · 旺衰 · 调候 · 大运</p>
+  </header>
+
+  <!-- Form -->
+  <div class="card">
+    <div class="card-title">📋 输入出生信息</div>
+    <form id="bazi-form" class="form-grid">
+      <div class="form-group">
+        <label>出生年</label>
+        <input type="number" id="year" value="1990" min="1900" max="2100" required>
+      </div>
+      <div class="form-group">
+        <label>出生月</label>
+        <input type="number" id="month" value="6" min="1" max="12" required>
+      </div>
+      <div class="form-group">
+        <label>出生日</label>
+        <input type="number" id="day" value="15" min="1" max="31" required>
+      </div>
+      <div class="form-group">
+        <label>性别</label>
+        <select id="gender">
+          <option value="男" selected>男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>出生时间（小时）</label>
+        <input type="number" id="hour" value="12" min="0" max="23" required>
+      </div>
+      <div class="form-group">
+        <label>分钟</label>
+        <input type="number" id="minute" value="0" min="0" max="59">
+      </div>
+      <button type="button" class="btn-analyze" id="submit-btn" onclick="doAnalysis()">开始分析</button>
+    </form>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>正在排盘分析中...</p>
+  </div>
+
+  <!-- Error -->
+  <div id="error-area"></div>
+
+  <!-- Result -->
+  <div id="result">
+    <!-- 命理分析报告（核心） -->
+    <div class="card report-card">
+      <div class="card-title report-title">📋 命理分析报告</div>
+      <div id="report-display"></div>
+      <div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:14px;">
+        <button id="deep-btn" onclick="triggerDeepAnalysis()" style="background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:0.92rem;font-weight:500;cursor:pointer;transition:background 0.2s;">
+          🤖 AI 深度解读
+        </button>
+        <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
+      </div>
+    </div>
+
+    <!-- 八字 -->
+    <div class="card">
+      <div class="card-title">📜 四柱八字</div>
+      <div id="bazi-display" class="bazi-grid"></div>
+      <div id="bazi-meta"></div>
+    </div>
+
+    <!-- 藏干 -->
+    <div class="card">
+      <div class="card-title">🌿 地支藏干</div>
+      <div id="zanggan-display" class="zg-grid"></div>
+    </div>
+
+    <!-- 旺衰 -->
+    <div class="card">
+      <div class="card-title">🔥 五行旺相休囚死</div>
+      <div id="wangshuai-display"></div>
+    </div>
+
+    <!-- 调候 -->
+    <div class="card">
+      <div class="card-title">☀️ 调候用神</div>
+      <div id="tiaohou-display">
+        <p style="color: var(--text2);">分析中...</p>
+      </div>
+    </div>
+
+    <!-- 格局 -->
+    <div class="card">
+      <div class="card-title">🏛️ 格局分析</div>
+      <div id="geju-display"></div>
+    </div>
+
+    <!-- 大运 -->
+    <div class="card">
+      <div class="card-title">🚀 大运</div>
+      <div id="dayun-display"></div>
+    </div>
+
+    <div class="disclaimer">
+      本系统仅供学习和参考，命理分析结果请理性看待。<br>
+      基于穷通宝鉴算法引擎 v1.0
+    </div>
+  </div>
+
+  <footer>
+    八字命理分析系统 · <a href="/docs">API 文档</a>
+  </footer>
+</div>
+
+<script>
+
+const loader = document.getElementById('loader');
+const resultDiv = document.getElementById('result');
+const errorArea = document.getElementById('error-area');
+
+const TIAN_GAN = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const DI_ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const WANG = ['旺','相','休','囚','死'];
+const ELEMENTS = ['木','火','土','金','水'];
+
+function doAnalysis() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '分析中...';
+  loader.classList.add('active');
+  resultDiv.classList.remove('active');
+  errorArea.innerHTML = '';
+
+  const data = {
+    year: parseInt(document.getElementById('year').value),
+    month: parseInt(document.getElementById('month').value),
+    day: parseInt(document.getElementById('day').value),
+    hour: parseInt(document.getElementById('hour').value),
+    minute: parseInt(document.getElementById('minute').value) || 0,
+    gender: document.getElementById('gender').value,
+  };
+
+  window._lastBaziData = data;
+
+  fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  .then(function(res) {
+    if (!res.ok) {
+      return res.json().then(function(err) { throw new Error(err.detail || '分析失败'); });
+    }
+    return res.json();
+  })
+  .then(function(result) {
+    renderResult(result);
+    resultDiv.classList.add('active');
+  })
+  .catch(function(err) {
+    errorArea.innerHTML = '<div class="error-msg">❌ ' + err.message + '</div>';
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = '开始分析';
+    loader.classList.remove('active');
+  });
+}
+
+function triggerDeepAnalysis() {
+  const deepBtn = document.getElementById('deep-btn');
+  const reportContainer = document.getElementById('report-display');
+  if (!window._lastBaziData) return;
+  
+  deepBtn.disabled = true;
+  deepBtn.textContent = 'AI 深度解读中...';
+  reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">AI 正在分析命局，请稍候...</p></div>';
+
+  fetch('/api/analyze/deep', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(window._lastBaziData),
+  })
+  .then(function(res) {
+    if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail); }); }
+    return res.json();
+  })
+  .then(function(result) {
+    renderReport(result.report);
+    deepBtn.textContent = '✅ AI 深度解读完成';
+    deepBtn.style.background = '#27ae60';
+  })
+  .catch(function(err) {
+    reportContainer.innerHTML = '<div class="error-msg">❌ AI 深度分析失败：' + err.message + '</div>';
+    deepBtn.textContent = '🔄 重试 AI 深度解读';
+    deepBtn.disabled = false;
+  });
+}
+
+function renderResult(r) {
+  renderReport(r.report);
+  renderBazi(r.bazi, r);
+  renderZanggan(r.zanggan);
+  renderWangshuai(r.wangshuai);
+  renderTiaohou(r.tiaohou, r.qiongtong_text, r.tiyao_entry);
+  renderGeju(r.geju);
+  renderDayun(r.dayun);
+}
+
+function renderReport(report) {
+  var container = document.getElementById('report-display');
+  if (!report || !report.sections || report.sections.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);">暂无分析报告。</p>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < report.sections.length; i++) {
+    var section = report.sections[i];
+    var isCritical = section.severity === 'critical';
+    html += '<div class="report-section">';
+    html += '<div class="report-section-title">' + (isCritical ? '⚠️ ' : '') + section.title + '</div>';
+    html += '<div class="report-content">';
+    for (var j = 0; j < section.content.length; j++) {
+      var cls = isCritical ? ' class="critical"' : '';
+      html += '<p' + cls + '>' + section.content[j] + '</p>';
+    }
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderBazi(bazi, metaData) {
+  var container = document.getElementById('bazi-display');
+  var meta = document.getElementById('bazi-meta');
+  var order = ['year', 'month', 'day', 'hour'];
+  var names = { year: '年柱', month: '月柱', day: '日柱', hour: '时柱' };
+  var labels = { year: '祖上', month: '父母/事业', day: '自身/婚姻', hour: '子女/晚年' };
+  var html = '';
+  for (var k = 0; k < order.length; k++) {
+    var key = order[k];
+    var p = bazi[key];
+    var isDay = key === 'day';
+    html += '<div class="bazi-cell' + (isDay ? ' day-cell' : '') + '">';
+    html += '<div class="pillar-name">' + names[key] + '</div>';
+    html += '<div class="gan">' + p.gan + '</div>';
+    html += '<div class="zhi">' + p.zhi + '</div>';
+    html += '<div class="shi-shen">' + p.shi_shen + '</div>';
+    html += '<div class="yy ' + (p.yin_yang === '阳' ? 'yang' : 'yin') + '">' + (p.yin_yang === '阳' ? '♂ 阳' : '♀ 阴') + '</div>';
+    html += '<div class="yy-label">' + labels[key] + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  meta.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;margin-top:8px;text-align:center;">出生：' + metaData.birth_date + ' · ' + metaData.gender + '</p>';
+}
+
+function renderZanggan(zanggan) {
+  var container = document.getElementById('zanggan-display');
+  var order = ['year', 'month', 'day', 'hour'];
+  var names = { year: '年', month: '月', day: '日', hour: '时' };
+  var html = '';
+  for (var k = 0; k < order.length; k++) {
+    var key = order[k];
+    var z = zanggan[key];
+    var items = '';
+    if (z.zanggan && z.zanggan.length > 0) {
+      for (var g = 0; g < z.zanggan.length; g++) {
+        items += '<div class="zg-item">' + z.zanggan[g].gan_char + ' <span class="the-god">' + z.zanggan[g].shi_shen + '</span></div>';
+      }
+    }
+    html += '<div class="zg-cell">';
+    html += '<div class="zg-zhi">' + z.zhi_char + '</div>';
+    html += '<div style="font-size:0.72rem;color:var(--text2);margin-bottom:4px;">' + names[key] + '支</div>';
+    html += items;
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderWangshuai(wangshuai) {
+  var container = document.getElementById('wangshuai-display');
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+  var items = [];
+  var keys = Object.keys(wangshuai);
+  for (var i = 0; i < keys.length; i++) {
+    var elem = keys[i];
+    var status = wangshuai[elem];
+    var weight = WANG.indexOf(status);
+    items.push({ elem: elem, status: status, weight: weight });
+  }
+  items.sort(function(a, b) { return a.weight - b.weight; });
+  for (var i = 0; i < items.length; i++) {
+    html += '<span class="tag tag-' + items[i].status + ' tag-' + items[i].elem + '" style="font-size:0.92rem;padding:4px 14px;">' + items[i].elem + ': ' + items[i].status + '</span>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderTiaohou(tiaohou, qiongtongText, tiyaoEntry) {
+  var container = document.getElementById('tiaohou-display');
+  var html = '';
+  if (qiongtongText) {
+    html += '<div class="tiaohou-quote">' + qiongtongText.replace(/\n/g, '<br>') + '</div>';
+  } else if (tiaohou) {
+    html += '<div class="tiaohou-quote">' + tiaohou.summary + '</div>';
+  } else {
+    html += '<p style="color:var(--text2);">穷通宝鉴暂无此组合的调候记录。</p>';
+  }
+  if (tiyaoEntry) {
+    html += '<p style="margin-top:10px;font-size:0.85rem;color:#8b6914;font-weight:500;">《八字提要》</p>';
+    html += '<div style="font-size:0.88rem;line-height:1.8;color:var(--text2);">' + tiyaoEntry + '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderGeju(geju) {
+  var container = document.getElementById('geju-display');
+  if (!geju || geju.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2);">暂无格局分析。</p>';
+    return;
+  }
+  var html = '<table class="info-table">';
+  for (var i = 0; i < geju.length; i++) {
+    var g = geju[i];
+    if (g.shi_shen) {
+      html += '<tr><td>格局</td><td><strong>' + g.geju_name + '</strong>（' + g.gan_char + '透出）</td></tr>';
+    } else {
+      html += '<tr><td>格局</td><td>' + g.geju_name + '</td></tr>';
+    }
+  }
+  html += '</table>';
+  container.innerHTML = html;
+}
+
+function renderDayun(dayun) {
+  var container = document.getElementById('dayun-display');
+  var direction = dayun.forward ? '顺排' : '逆排';
+  var startText = dayun.starting_age + '岁';
+  if (dayun.starting_months && dayun.starting_months > 0) {
+    startText = dayun.starting_years + '岁' + dayun.starting_months + '个月';
+  }
+  var html = '<p style="margin-bottom:10px;font-size:0.9rem;">起运：<strong>' + startText + '</strong> · 排法：' + direction + '</p>';
+  html += '<table class="luck-table"><thead><tr><th>大运</th><th>干支</th><th>五行</th><th>年龄</th></tr></thead><tbody>';
+  var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+  for (var i = 0; i < dayun.luck_cycles.length; i++) {
+    var cycle = dayun.luck_cycles[i];
+    var elem = elemMap[cycle.gan_char] || '';
+    html += '<tr><td>' + (i + 1) + '</td><td><strong>' + cycle.gan_char + cycle.zhi_char + '</strong></td>';
+    html += '<td style="color:var(--text2);font-size:0.85rem;">' + elem + '</td><td>' + cycle.age_range + '</td></tr>';
+  }
+  html += '</tbody></table>';
+  html += '<p style="margin-top:8px;font-size:0.82rem;color:var(--text2);">大运详细分析请见上方命理分析报告。</p>';
+  container.innerHTML = html;
+}
+
+</script>
+</body>
+</html>
