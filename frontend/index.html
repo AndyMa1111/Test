@@ -288,7 +288,21 @@
     border-radius: 4px;
   }
 
-  /* ======= Tiao Hou ======= */
+  /* ======= Print Styles ======= */
+  @media print {
+    body { background: #fff; }
+    .container { max-width: 100%; padding: 0; }
+    .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    .report-card { border: 2px solid #c0392b; }
+    header, footer, .disclaimer, .btn-analyze, #deep-btn,
+    .report-card div[style*="border-top"] { display: none !important; }
+    .bazi-cell { border: 1px solid #999; }
+    .bazi-cell.day-cell { background: #fff5f5; }
+    .tiaohou-quote { border: 1px solid #8b6914; }
+    @page { margin: 1.5cm; }
+  }
+  .pdf-btn-row { display: none; }
+  .pdf-btn-row.active { display: block; }
   .tiaohou-quote {
     background: #fef9ef;
     border-left: 4px solid var(--gold);
@@ -418,6 +432,11 @@
           🤖 AI 深度解读
         </button>
         <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
+        <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
+          <button onclick="downloadPDF()" style="background:#27ae60;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:0.92rem;font-weight:500;cursor:pointer;">
+            📥 下载 PDF
+          </button>
+        </div>
       </div>
     </div>
 
@@ -546,8 +565,10 @@ function triggerDeepAnalysis() {
   })
   .then(function(result) {
     renderReport(result.report);
+    window._lastDeepResult = result;
     deepBtn.textContent = '✅ AI 深度解读完成';
     deepBtn.style.background = '#27ae60';
+    document.getElementById('pdf-btn-row').classList.add('active');
   })
   .catch(function(err) {
     reportContainer.innerHTML = '<div class="error-msg">❌ AI 深度分析失败：' + err.message + '</div>';
@@ -669,6 +690,118 @@ function renderTiaohou(tiaohou, qiongtongText, tiyaoEntry) {
     html += '<div style="font-size:0.88rem;line-height:1.8;color:var(--text2);">' + tiyaoEntry + '</div>';
   }
   container.innerHTML = html;
+}
+
+function downloadPDF() {
+  var r = window._lastDeepResult;
+  if (!r) return;
+
+  // Build the print HTML with all data
+  var printWin = window.open('', '_blank', 'width=800,height=600');
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>八字命理分析报告</title>';
+  html += '<style>';
+  html += 'body{font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;font-size:11pt;line-height:1.8;color:#1a1a2e;padding:1.5cm;}';
+  html += 'h1{font-size:20pt;text-align:center;margin-bottom:4px;}';
+  html += '.sub{text-align:center;font-size:10pt;color:#888;margin-bottom:20px;}';
+  html += 'h2{font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;}';
+  html += 'p{margin:6px 0;text-indent:2em;}';
+  html += 'table{width:100%;border-collapse:collapse;margin:8px 0;font-size:10pt;}';
+  html += 'th{background:#c0392b;color:#fff;padding:5px 6px;}';
+  html += 'td{border:1px solid #ccc;padding:4px 6px;text-align:center;}';
+  html += '.bazi-box{text-align:center;margin:12px 0;}';
+  html += '.bazi-box span{display:inline-block;padding:8px 14px;border:1px solid #ddd;margin:0 3px;border-radius:4px;font-size:16pt;}';
+  html += '.bazi-box .day{border-color:#c0392b;background:#fff5f5;}';
+  html += '.quote{background:#fef9ef;border-left:4px solid #8b6914;padding:8px 12px;margin:8px 0;font-size:10pt;}';
+  html += '.footer{text-align:center;font-size:8pt;color:#aaa;margin-top:20px;border-top:1px solid #ddd;padding-top:8px;}';
+  html += '@page{margin:1.5cm;}';
+  html += '</style></head><body>';
+
+  // Header
+  html += '<h1>八字命理分析报告</h1>';
+  html += '<p class="sub">' + r.birth_date + ' · ' + (r.gender === '男' ? '男命' : '女命') + '</p>';
+
+  // Bazi big display
+  var order = ['year', 'month', 'day', 'hour'];
+  html += '<div class="bazi-box">';
+  for (var i = 0; i < order.length; i++) {
+    var p = r.bazi[order[i]];
+    var cls = order[i] === 'day' ? ' class="day"' : '';
+    html += '<span' + cls + '>' + p.gan + p.zhi + '</span>';
+  }
+  html += '</div>';
+
+  // Report sections
+  var report = r.report;
+  if (report && report.sections) {
+    for (var i = 0; i < report.sections.length; i++) {
+      var sec = report.sections[i];
+      var title = sec.title.replace(/### /g, '').trim();
+      html += '<h2>' + title + '</h2>';
+      for (var j = 0; j < sec.content.length; j++) {
+        html += '<p>' + sec.content[j] + '</p>';
+      }
+    }
+  }
+
+  // Ten Gods table
+  html += '<h2>十神分布</h2><table><tr><th>柱</th><th>天干</th><th>十神</th><th>地支</th><th>阴阳</th></tr>';
+  var nameMap = {year:'年',month:'月',day:'日',hour:'时'};
+  for (var i = 0; i < order.length; i++) {
+    var p = r.bazi[order[i]];
+    html += '<tr><td>' + nameMap[order[i]] + '</td><td>' + p.gan + '</td><td>' + p.shi_shen + '</td><td>' + p.zhi + '</td><td>' + p.yin_yang + '</td></tr>';
+  }
+  html += '</table>';
+
+  // Zanggan table
+  html += '<h2>地支藏干</h2><table><tr><th>柱</th><th>地支</th><th>藏干（十神）</th></tr>';
+  for (var i = 0; i < order.length; i++) {
+    var z = r.zanggan[order[i]];
+    var items = '';
+    if (z.zanggan) {
+      for (var k = 0; k < z.zanggan.length; k++) {
+        items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')';
+      }
+    }
+    html += '<tr><td>' + nameMap[order[i]] + '</td><td>' + z.zhi_char + '</td><td>' + items + '</td></tr>';
+  }
+  html += '</table>';
+
+  // Wangshuai
+  html += '<h2>五行旺相休囚死</h2><p>';
+  var wsKeys = Object.keys(r.wangshuai);
+  for (var i = 0; i < wsKeys.length; i++) {
+    html += (i > 0 ? '、' : '') + wsKeys[i] + '（' + r.wangshuai[wsKeys[i]] + '）';
+  }
+  html += '</p>';
+
+  // Tiaohou
+  if (r.qiongtong_text) {
+    html += '<h2>调候用神 — 穷通宝鉴</h2><div class="quote">' + r.qiongtong_text.substr(0, 300) + '……</div>';
+  }
+
+  // Dayun
+  if (r.dayun) {
+    var dy = r.dayun;
+    var startText = dy.starting_years + '岁';
+    if (dy.starting_months > 0) startText += dy.starting_months + '个月';
+    html += '<h2>大运</h2><p>起运：<strong>' + startText + '</strong> · 排法：' + (dy.forward ? '顺排' : '逆排') + '</p>';
+    html += '<table><tr><th>大运</th><th>干支</th><th>五行</th><th>年龄</th></tr>';
+    var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+    for (var i = 0; i < dy.luck_cycles.length; i++) {
+      var c = dy.luck_cycles[i];
+      html += '<tr><td>' + (i+1) + '</td><td><strong>' + c.gan_char + c.zhi_char + '</strong></td><td>' + (elemMap[c.gan_char]||'') + '</td><td>' + c.age_range + '</td></tr>';
+    }
+    html += '</table>';
+  }
+
+  // Footer
+  html += '<div class="footer">本报告由八字命理分析系统 AI 深度解读生成 · 基于穷通宝鉴算法引擎</div>';
+  html += '</body></html>';
+
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(function() { printWin.print(); }, 500);
 }
 
 function renderGeju(geju) {
