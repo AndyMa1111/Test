@@ -730,12 +730,51 @@ function downloadPDF() {
   btn.textContent = '⏳ 生成中...';
   btn.disabled = true;
 
+  // Try frontend method first (beautiful layout), fall back to server PDF
+  function serverFallback(errMsg) {
+    var isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
+    var data = window._lastBaziData;
+    if (!data) { btn.textContent = '❌ 下载失败'; btn.disabled = false; return; }
+    
+    // WeChat: navigate directly to a GET URL (bypass blob restriction)
+    if (isWechat) {
+      var url = '/api/analyze/pdf/dl?year=' + data.year + '&month=' + data.month + '&day=' + data.day + '&hour=' + data.hour + '&minute=' + data.minute + '&gender=' + data.gender;
+      window.location.href = url;
+      btn.textContent = '📥 下载中...';
+      setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 5000);
+      return;
+    }
+    
+    // Non-WeChat: use blob download from server
+    fetch('/api/analyze/pdf/server', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    .then(function(r2) {
+      if (!r2.ok) throw new Error('server fail');
+      return r2.blob();
+    })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = '八字命理分析报告.pdf';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      btn.textContent = '✅ 已下载';
+      setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 3000);
+    })
+    .catch(function() {
+      btn.textContent = '❌ 下载失败'; btn.disabled = false;
+    });
+  }
+
+  // Frontend beautiful PDF generation using html2canvas + jsPDF
   var order = ['year', 'month', 'day', 'hour'];
   var nameMap = {year:'年',month:'月',day:'日',hour:'时'};
   var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
   var genderChar = r.gender === '男' ? '男命' : '女命';
 
-  // Build full HTML content
   var h = '<div id="pdf-content" style="font-family:Microsoft YaHei,sans-serif;font-size:11pt;line-height:1.8;color:#1a1a2e;padding:40px;max-width:700px;margin:0 auto;">';
   h += '<h1 style="font-size:20pt;text-align:center;margin-bottom:2px;">八字命理分析报告</h1>';
   h += '<p style="text-align:center;font-size:10pt;color:#888;margin-bottom:20px;">' + r.birth_date + ' · ' + genderChar + '</p>';
@@ -758,22 +797,15 @@ function downloadPDF() {
 
   h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">十神分布</h2>';
   h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">天干</th><th style="background:#c0392b;color:white;padding:5px 6px;">十神</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">阴阳</th></tr>';
-  for (var i = 0; i < 4; i++) {
-    var p = r.bazi[order[i]];
+  for (var i = 0; i < 4; i++) { var p = r.bazi[order[i]];
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.gan + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.shi_shen + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.zhi + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.yin_yang + '</td></tr>';
   }
   h += '</table>';
 
   h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">地支藏干</h2>';
   h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">藏干（十神）</th></tr>';
-  for (var i = 0; i < 4; i++) {
-    var z = r.zanggan[order[i]];
-    var items = '';
-    if (z.zanggan) {
-      for (var k = 0; k < z.zanggan.length; k++) {
-        items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')';
-      }
-    }
+  for (var i = 0; i < 4; i++) { var z = r.zanggan[order[i]]; var items = '';
+    if (z.zanggan) { for (var k = 0; k < z.zanggan.length; k++) { items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')'; } }
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + z.zhi_char + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + items + '</td></tr>';
   }
   h += '</table>';
@@ -788,78 +820,53 @@ function downloadPDF() {
   h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">大运</h2>';
   h += '<p style="margin:6px 0;">起运：<strong>' + startText + '</strong> · 排法：' + (r.dayun.forward ? '顺排' : '逆排') + '</p>';
   h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">大运</th><th style="background:#c0392b;color:white;padding:5px 6px;">干支</th><th style="background:#c0392b;color:white;padding:5px 6px;">五行</th><th style="background:#c0392b;color:white;padding:5px 6px;">年龄</th></tr>';
-  for (var i = 0; i < r.dayun.luck_cycles.length; i++) {
-    var c = r.dayun.luck_cycles[i];
+  for (var i = 0; i < r.dayun.luck_cycles.length; i++) { var c = r.dayun.luck_cycles[i];
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (i+1) + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;"><strong>' + c.gan_char + c.zhi_char + '</strong></td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (elemMap[c.gan_char]||'') + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + c.age_range + '</td></tr>';
   }
   h += '</table>';
+  h += '<div style="text-align:center;font-size:8pt;color:#aaa;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;">本报告由八字命理分析系统 AI 深度解读生成</div></div>';
 
-  h += '<div style="text-align:center;font-size:8pt;color:#aaa;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;">本报告由八字命理分析系统 AI 深度解读生成</div>';
-  h += '</div>';
-
-  // Create a hidden iframe and write content into it
   var iframe = document.createElement('iframe');
-  iframe.style.position = 'absolute';
-  iframe.style.left = '-9999px';
-  iframe.style.top = '0';
-  iframe.style.width = '800px';
-  iframe.style.height = '1px';
-  iframe.style.border = 'none';
+  iframe.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;height:1px;border:none;';
   document.body.appendChild(iframe);
-
   var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
   iframeDoc.open();
   iframeDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>报告</title></head><body>' + h + '</body></html>');
   iframeDoc.close();
 
-  // Wait for content to render
   setTimeout(function() {
-    var captureEl = iframeDoc.getElementById('pdf-content');
-    if (!captureEl) { document.body.removeChild(iframe); btn.textContent = '❌ 生成失败'; btn.disabled = false; return; }
-    
-    html2canvas(captureEl, { 
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      width: 800,
-      backgroundColor: '#ffffff'
-    }).then(function(canvas) {
+    var el = iframeDoc.getElementById('pdf-content');
+    if (!el) { document.body.removeChild(iframe); serverFallback(); return; }
+    html2canvas(el, { scale: 2, useCORS: true, logging: false, width: 800, backgroundColor: '#ffffff' })
+    .then(function(canvas) {
       var imgData = canvas.toDataURL('image/jpeg', 0.95);
       var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-      var pdfWidth = pdf.internal.pageSize.getWidth();
-      var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      var pageHeight = pdf.internal.pageSize.getHeight();
-      var remainingHeight = pdfHeight;
-
-      if (remainingHeight <= pageHeight) {
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      var pw = pdf.internal.pageSize.getWidth();
+      var ph = (canvas.height * pw) / canvas.width;
+      var pageH = pdf.internal.pageSize.getHeight();
+      var rh = ph;
+      if (rh <= pageH) {
+        pdf.addImage(imgData, 'JPEG', 0, 0, pw, ph);
       } else {
-        // Multi-page
-        var srcY = 0;
-        while (remainingHeight > 0) {
-          var srcH = Math.min(canvas.height * (pageHeight / pdfHeight), canvas.height - srcY);
-          var canvasPart = document.createElement('canvas');
-          canvasPart.width = canvas.width;
-          canvasPart.height = srcH;
-          var ctx = canvasPart.getContext('2d');
-          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-          var partData = canvasPart.toDataURL('image/jpeg', 0.95);
-          var partH = (srcH * pdfWidth) / canvas.width;
-          if (srcY > 0) pdf.addPage();
-          pdf.addImage(partData, 'JPEG', 0, 0, pdfWidth, partH);
-          srcY += srcH;
-          remainingHeight -= partH;
+        var sy = 0;
+        while (rh > 0) {
+          var sh = Math.min(canvas.height * (pageH / ph), canvas.height - sy);
+          var cp = document.createElement('canvas');
+          cp.width = canvas.width; cp.height = sh;
+          cp.getContext('2d').drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
+          if (sy > 0) pdf.addPage();
+          pdf.addImage(cp.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pw, (sh * pw) / canvas.width);
+          sy += sh;
+          rh -= pageH;
         }
       }
-
       pdf.save('八字命理分析报告.pdf');
       document.body.removeChild(iframe);
       btn.textContent = '✅ 已下载';
       setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 3000);
-    }).catch(function(err) {
+    }).catch(function() {
       document.body.removeChild(iframe);
-      btn.textContent = '❌ 生成失败';
-      setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 2000);
+      serverFallback();
     });
   }, 500);
 }

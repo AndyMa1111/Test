@@ -21,6 +21,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Register WeChat PDF endpoint
+from backend.engine.wechat_pdf import router as wechat_router
+app.include_router(wechat_router)
+
 # CORS - allow frontend to access
 app.add_middleware(
     CORSMiddleware,
@@ -310,3 +314,37 @@ tr:nth-child(even) {{ background: #f8f8f8; }}
             return pdf_path
     
     return None
+
+
+@app.post("/api/analyze/pdf/server")
+async def analyze_bazi_pdf_server(data: BirthData):
+    """
+    服务端 PDF 生成（fpdf2，不依赖 Chromium）。
+    兼容微信浏览器等不支持前端 PDF 生成的场景。
+    """
+    import os, urllib.parse
+    from fastapi.responses import FileResponse, JSONResponse
+
+    try:
+        result = analyze_full_bazi(
+            year=data.year, month=data.month, day=data.day,
+            hour=data.hour, minute=data.minute, gender=data.gender,
+        )
+        from backend.engine.llm_report import generate_llm_report
+        deep_report = generate_llm_report(result)
+        result['report'] = deep_report
+        result['is_deep'] = True
+
+        from backend.engine.pdf_server import generate_pdf
+        pdf_path = generate_pdf(result)
+
+        if pdf_path and os.path.exists(pdf_path):
+            filename = f'bazi_report_{data.year}{data.month:02d}{data.day:02d}.pdf'
+            return FileResponse(pdf_path, media_type='application/pdf',
+                                filename=filename, headers={
+                                    'Content-Disposition': f"attachment; filename=\"{filename}\"; filename*=UTF-8''{urllib.parse.quote(filename)}"
+                                })
+
+        return JSONResponse({'error': 'PDF 生成失败'}, status_code=500)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
