@@ -520,8 +520,8 @@ function doAnalysis() {
 
   window._lastBaziData = data;
 
-  // Call deep analysis endpoint (includes AI)
-  fetch('/api/analyze/deep', {
+  // Call algorithm endpoint only (instant, no LLM)
+  fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -531,12 +531,17 @@ function doAnalysis() {
     return res.json();
   })
   .then(function(result) {
-    window._lastDeepResult = result;
-    renderResult(result);
+    // Show data cards only (no AI report yet)
+    renderBazi(result.bazi, result);
+    renderZanggan(result.zanggan);
+    renderWangshuai(result.wangshuai);
+    renderTiaohou(result.tiaohou, result.qiongtong_text, result.tiyao_entry);
+    renderGeju(result.geju);
+    renderDayun(result.dayun);
+    // Hide report section and enable deep button
+    document.getElementById('report-display').innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">点击下方 "AI 深度解读" 按钮生成完整分析报告。</p>';
+    document.getElementById('pdf-btn-row').classList.remove('active');
     resultDiv.classList.add('active');
-    // Show PDF download button if deep analysis succeeded
-    var pdfRow = document.getElementById('pdf-btn-row');
-    if (pdfRow) pdfRow.classList.add('active');
   })
   .catch(function(err) {
     errorArea.innerHTML = '<div class="error-msg">❌ ' + err.message + '</div>';
