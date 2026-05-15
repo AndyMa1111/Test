@@ -574,7 +574,11 @@ function triggerDeepAnalysis() {
   .then(function(result) {
     renderReport(result.report);
     window._lastDeepResult = result;
-    deepBtn.textContent = '✅ AI 深度解读完成';
+    if (result._from_cache) {
+      deepBtn.textContent = '✅ 已从缓存加载（相同八字无需重复分析）';
+    } else {
+      deepBtn.textContent = '✅ AI 深度解读完成';
+    }
     deepBtn.style.background = '#27ae60';
     document.getElementById('pdf-btn-row').classList.add('active');
   })

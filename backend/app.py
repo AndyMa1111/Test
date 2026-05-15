@@ -98,13 +98,24 @@ async def analyze_bazi_deep(data: BirthData):
             gender=data.gender,
         )
         
-        # Step 2: call LLM for deep analysis
+        # Step 2: check cache for same 八字+大运
+        from backend.engine.cache import get_cached_result, save_to_cache
+        cached = get_cached_result(result['bazi'], result['dayun'], result['gender'])
+        if cached:
+            cached['_from_cache'] = True
+            return cached
+        
+        # Step 3: call LLM for deep analysis
         from backend.engine.llm_report import generate_llm_report
         deep_report = generate_llm_report(result)
         
         # Replace report with LLM version
         result['report'] = deep_report
         result['is_deep'] = True
+        result['_from_cache'] = False
+        
+        # Save to cache for future lookups
+        save_to_cache(result['bazi'], result['dayun'], result['gender'], result)
         
         return result
     except Exception as e:
