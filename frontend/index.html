@@ -557,7 +557,23 @@ function triggerDeepAnalysis() {
   const deepBtn = document.getElementById('deep-btn');
   const reportContainer = document.getElementById('report-display');
   if (!window._lastBaziData) return;
-  
+
+  // Check if already analyzed with same birth data
+  if (window._lastDeepResult && window._lastDeepResult.birth_date) {
+    var expected = window._lastBaziData;
+    var cached = window._lastDeepResult;
+    var match = cached.birth_date.indexOf(expected.year) >= 0 &&
+                cached.birth_date.indexOf(String(expected.month)) >= 0 &&
+                cached.birth_date.indexOf(String(expected.day)) >= 0;
+    if (match) {
+      renderReport(cached.report);
+      deepBtn.textContent = '✅ 已经完成AI深度解读';
+      deepBtn.style.background = '#27ae60';
+      document.getElementById('pdf-btn-row').classList.add('active');
+      return;
+    }
+  }
+
   deepBtn.disabled = true;
   deepBtn.textContent = 'AI 深度解读中...';
   reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">AI 正在分析命局，请稍候...</p></div>';
