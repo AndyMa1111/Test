@@ -293,18 +293,29 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
         key_gods = tiaohou['key_gods'][:3]
         god_names = [g['gan_char'] for g in key_gods]
         
-        # Check if any key god appears in effective positions (year/month/hour stem)
+        # Check if any key god appears in effective positions
+        # (1) year/month/hour heavenly stem, (2) hour branch's 本气
         effective_positions = ['year', 'month', 'hour']
         effective_gods = []
         missing_gods = []
         
+        # Get hour branch's 本气 (first hidden stem)
+        from backend.data.solar_terms import DI_ZHI_ZANG_GAN
+        hour_zhi_char = result['bazi']['hour']['zhi']
+        hour_zhi_benqi = DI_ZHI_ZANG_GAN.get(hour_zhi_char, [''])[0]
+        
         for god in god_names:
             found = False
+            # Check heavenly stems
             for pos in effective_positions:
                 if result['bazi'].get(pos, {}).get('gan') == god:
                     effective_gods.append(f'{god}（{pos}柱天干）')
                     found = True
                     break
+            # Check hour branch's 本气
+            if not found and god == hour_zhi_benqi:
+                effective_gods.append(f'{god}（时支{hour_zhi_char}本气）')
+                found = True
             if not found:
                 missing_gods.append(god)
         
