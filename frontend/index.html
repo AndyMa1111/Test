@@ -490,6 +490,8 @@
   </footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 
 const loader = document.getElementById('loader');
@@ -728,31 +730,138 @@ function downloadPDF() {
   btn.textContent = '⏳ 生成中...';
   btn.disabled = true;
 
-  fetch('/api/analyze/pdf/from-result', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(r),
-  })
-  .then(function(res) {
-    if (!res.ok) { throw new Error('PDF 生成失败'); }
-    return res.blob();
-  })
-  .then(function(blob) {
-    var url = window.URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = '八字命理分析报告_' + r.birth_date.replace(/[年月日\s:]/g, '').substr(0,8) + '.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    btn.textContent = '✅ 已下载';
-    setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 3000);
-  })
-  .catch(function(err) {
-    btn.textContent = '❌ 下载失败';
-    setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 2000);
-  });
+  var order = ['year', 'month', 'day', 'hour'];
+  var nameMap = {year:'年',month:'月',day:'日',hour:'时'};
+  var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+  var genderChar = r.gender === '男' ? '男命' : '女命';
+
+  // Build full HTML content
+  var h = '<div id="pdf-content" style="font-family:Microsoft YaHei,sans-serif;font-size:11pt;line-height:1.8;color:#1a1a2e;padding:40px;max-width:700px;margin:0 auto;">';
+  h += '<h1 style="font-size:20pt;text-align:center;margin-bottom:2px;">八字命理分析报告</h1>';
+  h += '<p style="text-align:center;font-size:10pt;color:#888;margin-bottom:20px;">' + r.birth_date + ' · ' + genderChar + '</p>';
+  h += '<div style="text-align:center;margin:12px 0;">';
+  for (var i = 0; i < 4; i++) {
+    var k = order[i];
+    var pc = r.bazi[k];
+    var bc = k === 'day' ? ' style="border-color:#c0392b;background:#fff5f5;"' : '';
+    h += '<span style="display:inline-block;padding:8px 14px;border:1px solid #ddd;margin:0 3px;border-radius:4px;font-size:18pt;"' + bc + '>' + pc.gan + pc.zhi + '</span>';
+  }
+  h += '</div>';
+
+  for (var i = 0; i < r.report.sections.length; i++) {
+    var sec = r.report.sections[i];
+    h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
+    for (var j = 0; j < sec.content.length; j++) {
+      h += '<p style="margin:6px 0;text-indent:2em;">' + sec.content[j] + '</p>';
+    }
+  }
+
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">十神分布</h2>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">天干</th><th style="background:#c0392b;color:white;padding:5px 6px;">十神</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">阴阳</th></tr>';
+  for (var i = 0; i < 4; i++) {
+    var p = r.bazi[order[i]];
+    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.gan + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.shi_shen + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.zhi + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.yin_yang + '</td></tr>';
+  }
+  h += '</table>';
+
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">地支藏干</h2>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">藏干（十神）</th></tr>';
+  for (var i = 0; i < 4; i++) {
+    var z = r.zanggan[order[i]];
+    var items = '';
+    if (z.zanggan) {
+      for (var k = 0; k < z.zanggan.length; k++) {
+        items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')';
+      }
+    }
+    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + z.zhi_char + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + items + '</td></tr>';
+  }
+  h += '</table>';
+
+  if (r.qiongtong_text) {
+    h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">调候用神 — 穷通宝鉴</h2>';
+    h += '<div style="background:#fef9ef;border-left:4px solid #8b6914;padding:10px 14px;margin:10px 0;font-size:10pt;">' + r.qiongtong_text.substring(0, 300) + '……</div>';
+  }
+
+  var startText = r.dayun.starting_years + '岁';
+  if (r.dayun.starting_months > 0) startText += r.dayun.starting_months + '个月';
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">大运</h2>';
+  h += '<p style="margin:6px 0;">起运：<strong>' + startText + '</strong> · 排法：' + (r.dayun.forward ? '顺排' : '逆排') + '</p>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">大运</th><th style="background:#c0392b;color:white;padding:5px 6px;">干支</th><th style="background:#c0392b;color:white;padding:5px 6px;">五行</th><th style="background:#c0392b;color:white;padding:5px 6px;">年龄</th></tr>';
+  for (var i = 0; i < r.dayun.luck_cycles.length; i++) {
+    var c = r.dayun.luck_cycles[i];
+    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (i+1) + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;"><strong>' + c.gan_char + c.zhi_char + '</strong></td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (elemMap[c.gan_char]||'') + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + c.age_range + '</td></tr>';
+  }
+  h += '</table>';
+
+  h += '<div style="text-align:center;font-size:8pt;color:#aaa;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;">本报告由八字命理分析系统 AI 深度解读生成</div>';
+  h += '</div>';
+
+  // Create a hidden iframe and write content into it
+  var iframe = document.createElement('iframe');
+  iframe.style.position = 'absolute';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '0';
+  iframe.style.width = '800px';
+  iframe.style.height = '1px';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+
+  var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>报告</title></head><body>' + h + '</body></html>');
+  iframeDoc.close();
+
+  // Wait for content to render
+  setTimeout(function() {
+    var captureEl = iframeDoc.getElementById('pdf-content');
+    if (!captureEl) { document.body.removeChild(iframe); btn.textContent = '❌ 生成失败'; btn.disabled = false; return; }
+    
+    html2canvas(captureEl, { 
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      width: 800,
+      backgroundColor: '#ffffff'
+    }).then(function(canvas) {
+      var imgData = canvas.toDataURL('image/jpeg', 0.95);
+      var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+      var pdfWidth = pdf.internal.pageSize.getWidth();
+      var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      var pageHeight = pdf.internal.pageSize.getHeight();
+      var remainingHeight = pdfHeight;
+
+      if (remainingHeight <= pageHeight) {
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      } else {
+        // Multi-page
+        var srcY = 0;
+        while (remainingHeight > 0) {
+          var srcH = Math.min(canvas.height * (pageHeight / pdfHeight), canvas.height - srcY);
+          var canvasPart = document.createElement('canvas');
+          canvasPart.width = canvas.width;
+          canvasPart.height = srcH;
+          var ctx = canvasPart.getContext('2d');
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+          var partData = canvasPart.toDataURL('image/jpeg', 0.95);
+          var partH = (srcH * pdfWidth) / canvas.width;
+          if (srcY > 0) pdf.addPage();
+          pdf.addImage(partData, 'JPEG', 0, 0, pdfWidth, partH);
+          srcY += srcH;
+          remainingHeight -= partH;
+        }
+      }
+
+      pdf.save('八字命理分析报告.pdf');
+      document.body.removeChild(iframe);
+      btn.textContent = '✅ 已下载';
+      setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 3000);
+    }).catch(function(err) {
+      document.body.removeChild(iframe);
+      btn.textContent = '❌ 生成失败';
+      setTimeout(function() { btn.textContent = '📥 下载 PDF'; btn.disabled = false; }, 2000);
+    });
+  }, 500);
 }
 
 function renderGeju(geju) {
