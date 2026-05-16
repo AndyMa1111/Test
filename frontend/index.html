@@ -721,6 +721,162 @@
     padding: 10px;
     border-top: 1px solid var(--border);
   }
+
+  /* ======= Knowledge Page ======= */
+  .page-knowledge { display: none; }
+  .page-knowledge.active { display: block; }
+
+  .kb-header {
+    text-align: center;
+    padding: 40px 0 32px;
+  }
+  .kb-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+  .kb-header h1 span { color: var(--gold); }
+  .kb-header p {
+    color: var(--text2);
+    font-size: 0.92rem;
+    margin-top: 6px;
+  }
+
+  /* Article Grid */
+  .kb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+  }
+  .kb-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1.5px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .kb-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+    border-color: var(--gold);
+  }
+  .kb-card .kb-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: var(--gold-light);
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .kb-card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .kb-card .kb-excerpt {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .kb-card .kb-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: #aaa;
+  }
+  .kb-card .kb-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* Empty State */
+  .kb-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text2);
+  }
+  .kb-empty .kb-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  .kb-empty h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .kb-empty p {
+    font-size: 0.9rem;
+    color: #aaa;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Article Detail */
+  .kb-article { display: none; }
+  .kb-article.active { display: block; }
+  .kb-article .kb-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+    background: #fff;
+  }
+  .kb-article .kb-back:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .kb-article h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .kb-article .kb-article-meta {
+    font-size: 0.82rem;
+    color: #aaa;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .kb-article .kb-article-body {
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--text);
+  }
+  .kb-article .kb-article-body p {
+    margin-bottom: 16px;
+  }
+  .kb-article .kb-article-body h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin: 24px 0 12px;
+  }
+
 </style>
 </head>
 <body>
@@ -732,8 +888,8 @@
       <div class="logo-text"><span>Fate</span>Lab</div>
     </div>
     <div class="nav-items">
-      <span class="nav-item active">排盘分析</span>
-      <span class="nav-item" onclick="alert('即将上线')">八字知识</span>
+      <span class="nav-item active" onclick="switchPage('analysis')" style="cursor:pointer;">排盘分析</span>
+      <span class="nav-item" id="nav-knowledge" onclick="switchPage('knowledge')">八字知识</span>
     </div>
   </div>
 </div>
@@ -861,7 +1017,7 @@
         <button id="deep-btn" onclick="triggerDeepAnalysis()" class="btn btn-primary" style="font-size:0.92rem;">
           🤖 AI 深度解读
         </button>
-        <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
+        <p style="font-size:0.78rem;color:#999;margin-top:6px;">AI 深度分析命局，生成详细解读报告（约15秒）</p>
         <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
           <button onclick="downloadPDF()" class="btn btn-success" style="font-size:0.9rem;">
             📥 下载 PDF
@@ -984,30 +1140,30 @@ function triggerDeepAnalysis() {
   const reportContainer = document.getElementById('report-display');
   if (!window._lastBaziData) return;
 
-  // Step 1: Create payment order (or reuse existing)
-  fetch('/api/orders', {
+  deepBtn.disabled = true;
+  deepBtn.textContent = 'AI 分析中...';
+  reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">AI 正在分析命局，请稍候...</p></div>';
+
+  fetch('/api/analyze/deep', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(window._lastBaziData),
   })
   .then(function(res) {
-    if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail); }); }
+    if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail || '分析失败'); }); }
     return res.json();
   })
-  .then(function(data) {
-    if (data.is_reuse) {
-      // Already paid before — load cached report
-      deepBtn.textContent = '✅ 已购，加载报告中...';
-      reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">正在加载已购报告...</p></div>';
-      fetchOrderReport(data.order_id);
-      return;
-    }
-    // Show QR code payment modal
-    showPayModal(data.order_id, data.qrcode, data.total_fee);
+  .then(function(result) {
+    renderReport(result.report);
+    window._lastDeepResult = result;
+    deepBtn.textContent = '✅ AI 深度解读完成';
+    deepBtn.style.background = '#27ae60';
+    deepBtn.disabled = false;
+    document.getElementById('pdf-btn-row').classList.add('active');
   })
   .catch(function(err) {
-    reportContainer.innerHTML = '<div class="error-msg">❌ 创建订单失败：' + err.message + '</div>';
-    deepBtn.textContent = '🤖 AI 深度解读';
+    reportContainer.innerHTML = '<div class="error-msg">❌ AI 分析失败：' + err.message + '</div>';
+    deepBtn.textContent = '🔄 重试 AI 深度解读';
     deepBtn.disabled = false;
   });
 }
@@ -1399,56 +1555,105 @@ function downloadPDF() {
   var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
   var genderChar = r.gender === '男' ? '男命' : '女命';
 
-  var h = '<div id="pdf-content" style="font-family:Microsoft YaHei,sans-serif;font-size:11pt;line-height:1.8;color:#1a1a2e;padding:40px;max-width:700px;margin:0 auto;">';
-  h += '<h1 style="font-size:20pt;text-align:center;margin-bottom:2px;">八字命理分析报告</h1>';
-  h += '<p style="text-align:center;font-size:10pt;color:#888;margin-bottom:20px;">' + r.birth_date + ' · ' + genderChar + '</p>';
-  h += '<div style="text-align:center;margin:12px 0;">';
-  for (var i = 0; i < 4; i++) {
-    var k = order[i];
-    var pc = r.bazi[k];
-    var bc = k === 'day' ? ' style="border-color:#b2955d;background:#f7f4ee;"' : '';
-    h += '<span style="display:inline-block;padding:8px 14px;border:1px solid #ddd;margin:0 3px;border-radius:4px;font-size:18pt;"' + bc + '>' + pc.gan + pc.zhi + '</span>';
-  }
-  h += '</div>';
+  var elemColor = {
+    '甲':'#07e930','乙':'#07e930','丙':'#d30505','丁':'#d30505',
+    '戊':'#8b6d03','己':'#8b6d03','庚':'#ef9104','辛':'#ef9104',
+    '壬':'#2e83f6','癸':'#2e83f6'
+  };
 
+  var h = '<div id="pdf-content" style="font-family:Microsoft YaHei,PingFang SC,sans-serif;font-size:10.5pt;line-height:1.7;color:#101010;padding:30px 35px;max-width:680px;margin:0 auto;">';
+  h += '<h1 style="font-size:18pt;text-align:center;margin-bottom:2px;color:#101010;">八字命理分析报告</h1>';
+  h += '<p style="text-align:center;font-size:9pt;color:#888;margin-bottom:16px;">' + r.birth_date + ' · ' + genderChar + '</p>';
+
+  // --- Bazi 6-row table ---
+  h += '<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:10pt;">';
+  // Headers
+  h += '<tr>';
+  h += '<th style="background:#b2955d;color:#fff;padding:5px 3px;text-align:center;font-weight:500;width:44px;"></th>';
+  for (var i = 0; i < 4; i++) {
+    var nm = order[i] === 'day' ? '日主' : nameMap[order[i]] + '柱';
+    h += '<th style="background:#b2955d;color:#fff;padding:5px 3px;text-align:center;font-weight:500;">' + nm + '</th>';
+  }
+  h += '</tr>';
+  // 天干
+  h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">天干</td>';
+  for (var i = 0; i < 4; i++) {
+    var p = r.bazi[order[i]];
+    var gc = elemColor[p.gan] || '#101010';
+    var bg = order[i] === 'day' ? ' style="background:#f7f4ee;"' : '';
+    h += '<td style="border:1px solid #ddd;padding:6px 3px;text-align:center;font-size:14pt;font-weight:700;color:' + gc + ';"' + bg + '>' + p.gan + '</td>';
+  }
+  h += '</tr>';
+  // 地支
+  h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">地支</td>';
+  for (var i = 0; i < 4; i++) {
+    var p = r.bazi[order[i]];
+    var zc = elemColor[p.zhi] || '#101010';
+    var bg = order[i] === 'day' ? ' style="background:#f7f4ee;"' : '';
+    h += '<td style="border:1px solid #ddd;padding:6px 3px;text-align:center;font-size:14pt;font-weight:700;color:' + zc + ';"' + bg + '>' + p.zhi + '</td>';
+  }
+  h += '</tr>';
+  // 藏干
+  h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">藏干</td>';
+  for (var i = 0; i < 4; i++) {
+    var key = order[i];
+    var cgHtml = '';
+    if (r.zanggan && r.zanggan[key]) {
+      var z = r.zanggan[key];
+      if (z.zanggan) {
+        for (var g = 0; g < z.zanggan.length; g++) {
+          var cc = elemColor[z.zanggan[g].gan_char] || '#888';
+          cgHtml += '<span style="color:' + cc + ';">' + z.zanggan[g].gan_char + '</span>';
+          if (g < z.zanggan.length - 1) cgHtml += ' ';
+        }
+      }
+    }
+    h += '<td style="border:1px solid #ddd;padding:4px 3px;text-align:center;font-size:9pt;">' + (cgHtml || '-') + '</td>';
+  }
+  h += '</tr>';
+  // 纳音
+  h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">纳音</td>';
+  for (var i = 0; i < 4; i++) {
+    var ny = r.bazi[order[i]].nayin || '-';
+    h += '<td style="border:1px solid #ddd;padding:4px 3px;text-align:center;font-size:9pt;color:#999;">' + ny + '</td>';
+  }
+  h += '</tr>';
+  // 神煞
+  h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">神煞</td>';
+  for (var i = 0; i < 4; i++) {
+    var ss = r.bazi[order[i]].shensha || [];
+    var ssTxt = ss.length > 0 ? ss.join(' ') : '-';
+    h += '<td style="border:1px solid #ddd;padding:4px 3px;text-align:center;font-size:8pt;color:#666;">' + ssTxt + '</td>';
+  }
+  h += '</tr>';
+  h += '</table>';
+
+  // --- AI Report Sections ---
   for (var i = 0; i < r.report.sections.length; i++) {
     var sec = r.report.sections[i];
-    h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
+    h += '<h2 style="font-size:13pt;border-bottom:1.5px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:14px;margin-bottom:6px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
     for (var j = 0; j < sec.content.length; j++) {
-      h += '<p style="margin:6px 0;text-indent:2em;">' + sec.content[j] + '</p>';
+      h += '<p style="margin:4px 0;text-indent:2em;">' + sec.content[j] + '</p>';
     }
   }
 
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">十神分布</h2>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">柱</th><th style="background:#b2955d;color:white;padding:5px 6px;">天干</th><th style="background:#b2955d;color:white;padding:5px 6px;">十神</th><th style="background:#b2955d;color:white;padding:5px 6px;">地支</th><th style="background:#b2955d;color:white;padding:5px 6px;">阴阳</th></tr>';
-  for (var i = 0; i < 4; i++) { var p = r.bazi[order[i]];
-    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.gan + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.shi_shen + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.zhi + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.yin_yang + '</td></tr>';
-  }
-  h += '</table>';
-
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">地支藏干</h2>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">柱</th><th style="background:#b2955d;color:white;padding:5px 6px;">地支</th><th style="background:#b2955d;color:white;padding:5px 6px;">藏干（十神）</th></tr>';
-  for (var i = 0; i < 4; i++) { var z = r.zanggan[order[i]]; var items = '';
-    if (z.zanggan) { for (var k = 0; k < z.zanggan.length; k++) { items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')'; } }
-    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + z.zhi_char + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + items + '</td></tr>';
-  }
-  h += '</table>';
-
-  if (r.qiongtong_text) {
-    h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">调候用神 — 穷通宝鉴</h2>';
-    h += '<div style="background:#f7f4ee;border-left:4px solid #b2955d;padding:10px 14px;margin:10px 0;font-size:10pt;">' + r.qiongtong_text.substring(0, 300) + '……</div>';
-  }
-
+  // --- 大运流年 ---
   var startText = r.dayun.starting_years + '岁';
   if (r.dayun.starting_months > 0) startText += r.dayun.starting_months + '个月';
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">大运走势</h2>';
-  h += '<p style="margin:6px 0;">起运：<strong>' + startText + '</strong> · 排法：' + (r.dayun.forward ? '顺排' : '逆排') + '</p>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">大运</th><th style="background:#b2955d;color:white;padding:5px 6px;">干支</th><th style="background:#b2955d;color:white;padding:5px 6px;">五行</th><th style="background:#b2955d;color:white;padding:5px 6px;">年龄</th></tr>';
-  for (var i = 0; i < r.dayun.luck_cycles.length; i++) { var c = r.dayun.luck_cycles[i];
-    h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (i+1) + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;"><strong>' + c.gan_char + c.zhi_char + '</strong></td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (elemMap[c.gan_char]||'') + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + c.age_range + '</td></tr>';
+  h += '<h2 style="font-size:13pt;border-bottom:1.5px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:14px;margin-bottom:6px;">大运走势</h2>';
+  h += '<p style="margin:4px 0;font-size:9pt;color:#666;">起运：<strong>' + startText + '</strong> · 排法：' + (r.dayun.forward ? '顺排' : '逆排') + '</p>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:9pt;">';
+  h += '<tr><th style="background:#b2955d;color:#fff;padding:4px 4px;text-align:center;font-weight:500;">大运</th><th style="background:#b2955d;color:#fff;padding:4px 4px;text-align:center;font-weight:500;">干支</th><th style="background:#b2955d;color:#fff;padding:4px 4px;text-align:center;font-weight:500;">年龄</th></tr>';
+  for (var i = 0; i < r.dayun.luck_cycles.length; i++) {
+    var c = r.dayun.luck_cycles[i];
+    var gc = elemColor[c.gan_char] || '#101010';
+    h += '<tr><td style="border:1px solid #ddd;padding:3px 4px;text-align:center;">' + (i+1) + '</td>';
+    h += '<td style="border:1px solid #ddd;padding:3px 4px;text-align:center;font-weight:600;color:' + gc + ';">' + c.gan_char + c.zhi_char + '</td>';
+    h += '<td style="border:1px solid #ddd;padding:3px 4px;text-align:center;">' + c.age_range + '</td></tr>';
   }
   h += '</table>';
-  h += '<div style="text-align:center;font-size:8pt;color:#aaa;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;">本报告由八字命理分析系统 AI 深度解读生成</div></div>';
+
+  h += '<div style="text-align:center;font-size:7.5pt;color:#aaa;margin-top:20px;border-top:1px solid #ddd;padding-top:6px;">本报告由 FateLab 八字命理分析系统 AI 深度解读生成</div></div>';
 
   var iframe = document.createElement('iframe');
   iframe.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;height:1px;border:none;';
@@ -1760,7 +1965,103 @@ function updateDistricts() {
 // Load regions on page load
 loadRegions();
 
+/* ─── 页面切换 ─── */
+var _articles = [{"title": "给初学者的告诫——避免在格局和日柱衰旺的陷阱中不能自拔", "tag": "学习方法", "date": "2026.05.16", "read_time": "6 分钟", "excerpt": "大多数八字初学者都或多或少纠结于日元的旺衰问题，仿佛不确定日元的衰旺就无法论命了。究其原因，是因为对子平有误解，或者更准确的说，是误解了《子平真诠》。", "content": "\n<p>大多数八字初学者都或多或少纠结于日元的旺衰问题，仿佛不确定日元的衰旺就无法论命了。究其原因，是因为对子平有误解，或者更准确的说，是误解了《子平真诠》——格局并不是子平的全部。</p>\n<p>每一种方法都有其适用的情况，格局不是一种适用所有命的方法。就像不同的数学题有不同的解法，你非要用数形结合法去解高阶微积分，这就是给自己找罪受。</p>\n\n<h2>评判八字好坏的金标准是整体阴阳平衡</h2>\n<p>任何一个天干都只是平衡八字整体阴阳的一个因素，日干也不例外。</p>\n<p>月气也是影响全局阴阳的重要因素，冬天不可能热，夏天不可能冷，这是客观的自然规律，而春秋则是冷热不定，有变化的可能。古人将月令透干定位格局，就是为了更好的分析月气对全局的影响。</p>\n<p>八字的组合确定了阴阳吉凶，所以月令和日干是一定会有相互作用的。衰旺的本质是天干作用能力的大小，在命局必须要通过日干起重大作用的时候，日干的衰旺就显得很重要了。</p>\n<p>但八字有几十万种不同组合，每一种都必须日干起决定作用吗？</p>\n<p><strong>在日干不重要的时候，它的衰旺又有多少意义呢？</strong></p>\n\n<h2>子平以日为主，是时代的需要</h2>\n<p>年为祖宗，月为父母兄弟，日为夫妻家庭，时为儿女子孙。年月为先天环境，日时为后天努力。这是大家耳熟能详的内容。</p>\n<p>在子平法出现以前，古人论命都是以年柱为核心，有纳音、神煞等多种论命方法。因为在我国历史上很长一段时间是世家当道，没有祖上荫蔽，个人是绝无出头之机会。因此，年月的大环境，往往对命主的成就有着决定性的作用。但宋朝以后，世家不再把持朝政，个人通过努力是可以达到富贵阶层的，因此强调日干作用的子平法应运而生了。</p>\n<p>通过自身努力，实现人生目标，我理解，这就是子平想表达的内容。</p>\n\n<p>《子平真诠》是一本很有价值的书，其功在详细分析成格方法、给了子平法论富贵的简单上手的框架，但也是几百年来造成初学者迷茫的罪魁祸首。</p>\n<p>格局法不是子平的全部，不适合所有命。</p>\n<p>《子平真诠》作者沈孝瞻是清朝进士官员，他所论命的对象都是达官贵人，追求的都是八字上的最佳组合，强调衰旺、强弱、先后、调候、清浊、有情无情等诸多因素的完美配合。在这种理论探讨的情况下，格局成与不成以及日主衰旺就非常重要了。</p>\n<p>但不是所有人都是马云王健林，对于普通人来说，重视格局的成败和个人衰旺的意义到底有多大？</p>\n<p><strong>分人而论。普通人，应该关注一财一官，论岁运得失，更有实用价值。</strong></p>\n\n<h2>案例：格局法的局限</h2>\n<p>举《滴天髓》中\"衰旺篇\"任铁樵一例：</p>\n<p style=\"font-size:1.05rem;padding:12px 16px;background:var(--gold-light);border-radius:8px;margin:12px 0;\">\n<strong>乾造：</strong>乙丑 甲申 甲申 辛未<br>\n<strong>大运：</strong>癸未 壬午 辛巳 庚辰 己卯 戊寅\n</p>\n<p>任氏原文：此造地支土金，木无盘根之处，时干辛金，元神发透，木太衰者，似水也，初运癸未壬午，生木制金，刑丧早见，荫疪难丰；辛巳庚辰，金逢生地，白手发财数万；己卯运土无根，木得地，遭回禄，破财万余；至寅而亡。</p>\n<p>按：此命日主衰弱，毫无疑问。如按格局论，采用扶抑法，用印化殺，则初运癸未壬午必发达，庚辰辛巳运凶。然而事实却相反，为何？</p>\n<p><strong>因为此命不需要日主来平衡月气，甚至可以说日主是阻碍全局阴阳平衡的因素。</strong></p>\n<p>申月气进三阴，火热尚余，申中有庚生壬容易阴旺，地支阴太重，八字核心在土制水。原局三木出干，克土的倾向已明，在未有应，时辛出干是救应。壬癸水出干泄金生木不吉，庚辛金克木阴有制而出阳得富贵，运至寅卯金绝，戊被甲克，阴气无制而亡。</p>\n"},{"title": "天道·地道·人道——八字命理的三层境界", "tag": "核心理论", "date": "2026.05.16", "read_time": "6 分钟", "excerpt": "在实际论命中，我们往往会遇到一些难以理解的情况：有的人不成格局，却有富贵；有的人格局配合很好，却突然暴毙……到底如何评断人生的妻财子禄寿？", "content": "\n<p>八字是天道、地道、人道三个层次的作用。在实际论命中，我们往往会遇到一些难以理解的情况：有的人不成格局，却有富贵；有的人格局配合很好，却突然暴毙；有些人什么都不做，却有很高的威望。诸如此类的情况很多。</p>\n<p>到底如何评断人生的妻财子禄寿？方法不唯一。</p>\n<p>《滴天髓》开篇就写了：人生本来就是天道、地道、人道三个不同层次的作用。</p>\n\n<h2>天道：欲识三元万法宗，先观帝载与神功</h2>\n<p>天道讲得是宇宙自然规律对人的影响，讲得是阴阳二气的平衡。</p>\n<p>八字的年月是地球公转产生的阴阳二气作用，结果是四季变化。</p>\n<p>八字的日时是地球自转产生的阴阳二气作用，结果是一日温差。</p>\n<p>八字作为时空标记，能接收到的阴阳二气的程度，决定了人的层次、富贵和寿命。</p>\n<p>需要注意的是天道的富贵指的是人生层面的不是社会层面的，与时代无关。天道的富是指一辈子衣食无忧，天道的贵指的是受人尊重有影响力，而不是当官有权。</p>\n<p>天道论阴阳，论气不论十神和干支象，《栏江网》是优秀的解读。欲知命主和六亲的健康寿命、终生层次，应当以此为参考。</p>\n\n<h2>地道：坤元合德机缄通，五气偏全定吉凶</h2>\n<p>地道讲得是在一定时代背景下社会对人的影响，体现在格局成败。</p>\n<p>月柱代表社会环境，从月令透出的主气作为最能影响命局的作用因素，以十神格局为切入点，判断命主在这大环境下的富贵情况和社会成就。</p>\n<p>格局论社会层次的富贵，论不了夭寿。格局的富，是商人，是企业家，是大富翁；格局的贵，是官员，是权力，是社会控制力。</p>\n<p>大运是地命的重要演变，是月令主气衡量于十二宫的比较，是八字原局信息在社会人生轨迹中的变化落实。</p>\n<p>地命的富贵是随着大运变化的。有些人在好运中加官进爵，运过就打回原形就是这个原因。</p>\n<p>天命的富贵是恒定的，再差的大运也不至于饿死，只是清贵有寿。</p>\n<p>地命的富贵是变化的，随着大运的起伏顺逆而体现不同的结果。</p>\n<p>追求社会成就、奋发图强的人，学好格局就能明白事业起伏点，但需要注意格局成就与健康寿命无关。</p>\n<p>普通人，如果不是事业型，没必要太在意格局成败，遵循人道即可。</p>\n\n<h2>人道：戴天履地人为贵，顺则吉兮凶则悖</h2>\n<p>人道讲得是一个人的思想和行为模式对人生的影响。</p>\n<p>日干代表自己，日干衰旺状态，坐支为何和其他干支的组合关系如何，这些干支象共同决定了人的细节情况，如身体外貌、性格、情感、婚姻等。</p>\n<p>流年是人道的范畴。</p>\n<p>天地定好的富贵，最后都需要通过人来落实。不同流年，天干生克制化、地支刑冲合会穿破的组合不同，应事的方式就不同。同样是财运好得财的结果，日主合财和食伤生财代表的获财手段不同。</p>\n<p>人道论干支象，论应事的详细因果过程，技法太多。</p>\n\n<h2>三层关系总结</h2>\n<p><strong>天命好</strong>，人一生至少清贵，享有安康。</p>\n<p><strong>天命好，地命好</strong>，人不需要努力就有富贵。</p>\n<p><strong>天命不好，地命好</strong>，人有一时富贵，但寿命不长。</p>\n<p><strong>天命地命都不好</strong>，人再怎么努力也不会有大成就。</p>\n"}];
+
+// 添加新文章：_articles.push({title:'xxx', tag:'xxx', date:'xxx', read_time:'x分钟', excerpt:'xxx', content:'xxx'});
+
+function switchPage(page) {
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  if (page === 'knowledge') {
+    document.getElementById('nav-knowledge').classList.add('active');
+    document.getElementById('page-knowledge').classList.add('active');
+    document.querySelector('.container').style.display = 'none';
+    renderArticles();
+  } else {
+    document.querySelector('.nav-item:first-child').classList.add('active');
+    document.getElementById('page-knowledge').classList.remove('active');
+    document.querySelector('.container').style.display = '';
+  }
+}
+
+function renderArticles() {
+  var grid = document.getElementById('kb-grid');
+  var empty = document.getElementById('kb-empty');
+  grid.innerHTML = '';
+
+  if (!_articles || _articles.length === 0) {
+    empty.style.display = '';
+    grid.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  for (var i = _articles.length - 1; i >= 0; i--) {
+    var a = _articles[i];
+    var html = '<div class="kb-card" onclick="openArticle(' + i + ')">';
+    if (a.tag) html += '<div class="kb-tag">' + a.tag + '</div>';
+    html += '<h3>' + a.title + '</h3>';
+    html += '<div class="kb-excerpt">' + (a.excerpt || '') + '</div>';
+    html += '<div class="kb-meta">';
+    if (a.date) html += '<span>📅 ' + a.date + '</span>';
+    if (a.read_time) html += '<span>⏱ ' + a.read_time + '</span>';
+    html += '</div></div>';
+    grid.innerHTML += html;
+  }
+}
+
+function openArticle(idx) {
+  var a = _articles[idx];
+  if (!a) return;
+  document.getElementById('kb-grid').style.display = 'none';
+  document.getElementById('kb-empty').style.display = 'none';
+  document.getElementById('kb-article').classList.add('active');
+  document.getElementById('kb-article-title').textContent = a.title;
+  document.getElementById('kb-article-meta').textContent = (a.date || '') + (a.read_time ? ' · ' + a.read_time : '');
+  document.getElementById('kb-article-body').innerHTML = a.content || '';
+}
+
+function closeArticle() {
+  document.getElementById('kb-article').classList.remove('active');
+  renderArticles();
+}
+
 </script>
+
+
+<!-- Knowledge Page -->
+<div class="page-knowledge" id="page-knowledge">
+  <div class="container" id="kb-container">
+    <div class="kb-header">
+      <h1>八字 <span>知识库</span></h1>
+      <p>从零开始，系统学习八字命理</p>
+    </div>
+
+    <!-- Article Grid -->
+    <div id="kb-grid" class="kb-grid">
+      <!-- Articles rendered by JS -->
+    </div>
+
+    <!-- Empty State (shown when no articles) -->
+    <div id="kb-empty" class="kb-empty">
+      <div class="kb-empty-icon">📖</div>
+      <h2>还没有文章</h2>
+      <p>老师正在准备八字知识文章，敬请期待。<br>后续会陆续更新基础概念、十神、格局、调候等系统教程。</p>
+    </div>
+
+    <!-- Article Detail View -->
+    <div id="kb-article" class="kb-article">
+      <div class="kb-back" onclick="closeArticle()">← 返回知识库</div>
+      <h1 id="kb-article-title"></h1>
+      <div class="kb-article-meta" id="kb-article-meta"></div>
+      <div class="kb-article-body" id="kb-article-body"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Payment Modal -->
 <div id="pay-overlay" class="pay-overlay" onclick="if(event.target===this)closePayModal()">

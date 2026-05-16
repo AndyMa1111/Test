@@ -1,10 +1,24 @@
 """
 Server-side PDF generation using fpdf2 (pure Python, no Chromium needed).
 Works in all environments including WeChat browser.
+Now includes 6-row bazi table, nayin, shensha, and modern formatting.
 """
 import os
-import subprocess
 from fpdf import FPDF
+
+# 五行颜色 (RGB)
+ELEM_COLORS = {
+    '甲': (0, 180, 50), '乙': (0, 180, 50),   # 木 - 绿
+    '丙': (211, 5, 5),  '丁': (211, 5, 5),    # 火 - 红
+    '戊': (139, 109, 3), '己': (139, 109, 3),  # 土 - 金棕
+    '庚': (239, 145, 4), '辛': (239, 145, 4),  # 金 - 橙
+    '壬': (46, 131, 246), '癸': (46, 131, 246), # 水 - 蓝
+}
+GOLD = (178, 149, 93)
+GOLD_LIGHT = (247, 244, 238)
+DARK = (16, 16, 16)
+GRAY = (136, 136, 136)
+GRAY_LIGHT = (250, 250, 250)
 
 
 def _space_for(pdf, needed_mm: float, section_title: str = ""):
@@ -13,117 +27,232 @@ def _space_for(pdf, needed_mm: float, section_title: str = ""):
     remaining = pdf.h - pdf.b_margin - pdf.get_y()
     if remaining < needed_mm:
         pdf.add_page()
-        # If we broke for a section, repeat the section title on the new page
         if section_title:
-            pdf.set_font("zh", "B", 13)
+            pdf.set_font("zh", "B", 12)
+            pdf.set_text_color(*GOLD)
             pdf.cell(0, 10, section_title + "（续）", ln=True)
-            pdf.set_font("zh", "", 11)
+            pdf.set_text_color(*DARK)
+            pdf.set_font("zh", "", 10)
 
 
 def generate_pdf(result: dict) -> str:
-    """
-    Generate a PDF from analysis result using fpdf2.
-    Returns the PDF file path.
-    """
+    """Generate a PDF from analysis result using fpdf2.
+    Returns the PDF file path."""
     font_path = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=25)
     pdf.add_page()
-    
-    # Register Chinese font
+
     pdf.add_font("zh", "", font_path)
     pdf.add_font("zh", "B", font_path)
-    pdf.set_font("zh", "", 20)
-    
+    pdf.add_font("zh", "I", font_path)
+
     # Title
-    pdf.cell(0, 15, "八字命理分析报告", ln=True, align="C")
-    pdf.set_font("zh", "", 10)
-    pdf.cell(0, 8, result.get("birth_date", "") + " · " + ("男命" if result.get("gender") == "男" else "女命"), ln=True, align="C")
-    pdf.ln(5)
-    
-    # Bazi (large display)
+    pdf.set_font("zh", "B", 18)
+    pdf.set_text_color(*DARK)
+    pdf.cell(0, 12, "八字命理分析报告", ln=True, align="C")
+    pdf.set_font("zh", "", 9)
+    pdf.set_text_color(*GRAY)
+    birth = result.get("birth_date", "")
+    gender = "男命" if result.get("gender") == "男" else "女命"
+    pdf.cell(0, 7, f"{birth} · {gender}", ln=True, align="C")
+    pdf.ln(3)
+
+    # ----- 6-row Bazi table -----
+    order = ["year", "month", "day", "hour"]
+    name_map = {"year": "年柱", "month": "月柱", "day": "日主", "hour": "时柱"}
     bazi = result.get("bazi", {})
-    bazi_str = "  ".join([f"{bazi[k]['gan']}{bazi[k]['zhi']}" for k in ["year", "month", "day", "hour"] if bazi.get(k)])
-    pdf.set_font("zh", "", 16)
-    pdf.cell(0, 12, bazi_str, ln=True, align="C")
+
+    # Header row
+    pdf.set_font("zh", "B", 8)
+    pdf.set_fill_color(*GOLD)
+    pdf.set_text_color(255, 255, 255)
+    col_w = [30, (190 - 30) // 4, (190 - 30) // 4, (190 - 30) // 4, (190 - 30) // 4]
+    # Adjust: 5 columns: label + 4 pillars
+    pdf.cell(30, 8, "", border=1, fill=True, align="C")
+    for k in order:
+        pdf.cell(col_w[1], 8, name_map[k], border=1, fill=True, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
+    def _pillar_cell(label, cells, is_day_index=None):
+        """Draw one row of the bazi table."""
+        pdf.set_font("zh", "", 7.5)
+        pdf.set_fill_color(*GRAY_LIGHT)
+        pdf.cell(30, 7, label, border=1, fill=True, align="C")
+        for i, (kv, val) in enumerate(zip(order, cells)):
+            if i == is_day_index:
+                pdf.set_fill_color(*GOLD_LIGHT)
+                pdf.set_text_color(*DARK)
+            else:
+                pdf.set_fill_color(255, 255, 255)
+            pdf.set_font("zh", "B", 11) if label in ("天干", "地支") else pdf.set_font("zh", "", 8)
+            pdf.cell(col_w[1], 7, str(val), border=1, fill=True, align="C")
+        pdf.ln()
+        pdf.set_text_color(*DARK)
+
+    # Row 1: 天干 (with element color)
+    pdf.set_font("zh", "B", 7.5)
+    pdf.set_fill_color(*GRAY_LIGHT)
+    pdf.cell(30, 7, "天干", border=1, fill=True, align="C")
+    for i, k in enumerate(order):
+        p = bazi.get(k, {})
+        g = p.get("gan", "")
+        c = ELEM_COLORS.get(g, DARK)
+        pdf.set_text_color(*c)
+        bg = 1 if k == "day" else 0
+        if bg:
+            pdf.set_fill_color(*GOLD_LIGHT)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.set_font("zh", "B", 13)
+        pdf.cell(col_w[1], 8, g, border=1, fill=bg, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
+    # Row 2: 地支 (with element color)
+    pdf.set_font("zh", "B", 7.5)
+    pdf.set_fill_color(*GRAY_LIGHT)
+    pdf.cell(30, 7, "地支", border=1, fill=True, align="C")
+    for i, k in enumerate(order):
+        p = bazi.get(k, {})
+        z = p.get("zhi", "")
+        c = ELEM_COLORS.get(z, DARK)
+        pdf.set_text_color(*c)
+        bg = 1 if k == "day" else 0
+        if bg:
+            pdf.set_fill_color(*GOLD_LIGHT)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.set_font("zh", "B", 13)
+        pdf.cell(col_w[1], 8, z, border=1, fill=bg, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
+    # Row 3: 藏干
+    zanggan = result.get("zanggan", {})
+    pdf.set_font("zh", "", 7.5)
+    pdf.set_fill_color(*GRAY_LIGHT)
+    pdf.cell(30, 7, "藏干", border=1, fill=True, align="C")
+    for k in order:
+        zg = zanggan.get(k, {})
+        parts = []
+        if zg.get("zanggan"):
+            for g in zg["zanggan"]:
+                gc = g.get("gan_char", "")
+                parts.append(gc)
+        txt = " ".join(parts) if parts else "-"
+        pdf.set_text_color(*DARK)
+        pdf.set_font("zh", "", 9)
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(col_w[1], 7, txt, border=1, fill=True, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
+    # Row 4: 纳音
+    pdf.set_font("zh", "", 7.5)
+    pdf.set_fill_color(*GRAY_LIGHT)
+    pdf.cell(30, 7, "纳音", border=1, fill=True, align="C")
+    for k in order:
+        p = bazi.get(k, {})
+        ny = p.get("nayin", "-")
+        pdf.set_text_color(*GRAY)
+        pdf.set_font("zh", "", 8)
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(col_w[1], 7, ny, border=1, fill=True, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
+    # Row 5: 神煞
+    pdf.set_font("zh", "", 7.5)
+    pdf.set_fill_color(*GRAY_LIGHT)
+    pdf.cell(30, 7, "神煞", border=1, fill=True, align="C")
+    for k in order:
+        p = bazi.get(k, {})
+        ss = p.get("shensha", [])
+        txt = " ".join(ss) if ss else "-"
+        pdf.set_text_color(*GRAY)
+        pdf.set_font("zh", "", 7)
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(col_w[1], 7, txt, border=1, fill=True, align="C")
+    pdf.ln()
+    pdf.set_text_color(*DARK)
+
     pdf.ln(5)
-    
-    # Report sections
+
+    # ----- AI Report Sections -----
     report = result.get("report", {})
     sections = report.get("sections", [])
     for idx, s in enumerate(sections):
         title = s.get("title", "").replace("### ", "").strip()
-        
-        # -- Guard: section title needs at least 25mm (title + 2 lines of content) --
         _space_for(pdf, 25, title if idx > 0 else "")
-        
-        # Section title
-        pdf.set_font("zh", "B", 13)
-        pdf.cell(0, 10, title, ln=True)
-        pdf.set_font("zh", "", 11)
-        
+
+        pdf.set_font("zh", "B", 12)
+        pdf.set_text_color(*GOLD)
+        pdf.cell(0, 9, title, ln=True)
+        pdf.set_text_color(*DARK)
+        pdf.set_font("zh", "", 10)
+
         for line in s.get("content", []):
             clean = line.strip()
             if clean:
-                pdf.multi_cell(0, 7, clean, new_x="LMARGIN", new_y="NEXT")
-        pdf.ln(3)
-    
-    # Ten gods table
-    _space_for(pdf, 35)
-    pdf.set_font("zh", "B", 13)
-    pdf.cell(0, 10, "十神分布", ln=True)
-    _draw_table(pdf, ["柱", "天干", "十神", "地支", "阴阳"],
-                [[{"year":"年","month":"月","day":"日","hour":"时"}[k],
-                  bazi[k]["gan"], bazi[k]["shi_shen"], bazi[k]["zhi"], bazi[k]["yin_yang"]]
-                 for k in ["year","month","day","hour"]], font_path)
-    pdf.ln(3)
-    
-    # Dayun
+                _space_for(pdf, 10)
+                pdf.multi_cell(0, 6.5, clean, new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(2)
+
+    # ----- 大运 -----
     dayun = result.get("dayun", {})
     start_text = f"{dayun.get('starting_years', 0)}岁"
     if dayun.get("starting_months", 0) > 0:
         start_text += f"{dayun['starting_months']}个月"
-    
-    _space_for(pdf, 35)
-    pdf.set_font("zh", "B", 13)
-    pdf.cell(0, 10, "大运", ln=True)
-    pdf.set_font("zh", "", 11)
-    pdf.cell(0, 7, f"起运：{start_text} 排法：{'顺排' if dayun.get('forward') else '逆排'}", ln=True)
-    
-    elem_map = {"甲":"木","乙":"木","丙":"火","丁":"火","戊":"土","己":"土","庚":"金","辛":"金","壬":"水","癸":"水"}
+
+    _space_for(pdf, 25)
+    pdf.set_font("zh", "B", 12)
+    pdf.set_text_color(*GOLD)
+    pdf.cell(0, 9, "大运走势", ln=True)
+    pdf.set_text_color(*DARK)
+    pdf.set_font("zh", "", 9)
+    pdf.cell(0, 6, f"起运：{start_text} · 排法：{'顺排' if dayun.get('forward') else '逆排'}", ln=True)
+    pdf.ln(1)
+
+    elem_map = {"甲": "木", "乙": "木", "丙": "火", "丁": "火",
+                "戊": "土", "己": "土", "庚": "金", "辛": "金", "壬": "水", "癸": "水"}
     dy_rows = []
     for i, c in enumerate(dayun.get("luck_cycles", [])):
-        dy_rows.append([str(i+1), f"{c['gan_char']}{c['zhi_char']}", elem_map.get(c['gan_char'], ''), c['age_range']])
-    _space_for(pdf, 35)
-    _draw_table(pdf, ["大运", "干支", "五行", "年龄"], dy_rows, font_path)
-    
+        gc = c['gan_char']
+        dy_rows.append([str(i + 1), f"{gc}{c['zhi_char']}", c['age_range']])
+
+    if dy_rows:
+        pdf.set_font("zh", "B", 8)
+        pdf.set_fill_color(*GOLD)
+        pdf.set_text_color(255, 255, 255)
+        dw = 190 // 3
+        pdf.cell(dw, 7, "大运", border=1, fill=True, align="C")
+        pdf.cell(dw, 7, "干支", border=1, fill=True, align="C")
+        pdf.cell(dw, 7, "年龄", border=1, fill=True, align="C")
+        pdf.ln()
+        pdf.set_text_color(*DARK)
+        pdf.set_font("zh", "", 9)
+        for row in dy_rows:
+            for i, val in enumerate(row):
+                if i == 1:
+                    gc = val[0] if val else ""
+                    c = ELEM_COLORS.get(gc, DARK)
+                    pdf.set_text_color(*c)
+                    pdf.set_font("zh", "B", 10)
+                else:
+                    pdf.set_text_color(*DARK)
+                    pdf.set_font("zh", "", 9)
+                pdf.cell(dw, 7, str(val), border=1, align="C")
+            pdf.ln()
+
     # Footer
-    _space_for(pdf, 20)
-    pdf.set_font("zh", "", 8)
-    pdf.cell(0, 5, "本报告由八字命理分析系统 AI 深度解读生成", ln=True, align="C")
-    
+    _space_for(pdf, 15)
+    pdf.set_font("zh", "", 7)
+    pdf.set_text_color(170, 170, 170)
+    pdf.cell(0, 5, "本报告由 FateLab 八字命理分析系统 AI 深度解读生成", ln=True, align="C")
+
     # Save
     pdf_path = os.path.expanduser("~/bazi_server_report.pdf")
     pdf.output(pdf_path)
     return pdf_path
-
-
-def _draw_table(pdf, headers, rows, font_path):
-    """Draw a simple table in the PDF."""
-    col_widths = [190 // len(headers)] * len(headers)
-    
-    # Header
-    pdf.set_font("zh", "B", 9)
-    pdf.set_fill_color(192, 57, 43)
-    pdf.set_text_color(255, 255, 255)
-    for i, h in enumerate(headers):
-        pdf.cell(col_widths[i], 8, h, border=1, fill=True, align="C")
-    pdf.ln()
-    
-    # Rows
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("zh", "", 9)
-    for row in rows:
-        for i, cell in enumerate(row):
-            pdf.cell(col_widths[i], 7, str(cell), border=1, align="C")
-        pdf.ln()
