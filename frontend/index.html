@@ -1597,6 +1597,13 @@ function downloadPDF() {
     '戊':'#8b6d03','己':'#8b6d03','庚':'#ef9104','辛':'#ef9104',
     '壬':'#2e83f6','癸':'#2e83f6'
   };
+  var zhiColor = {
+    '寅':'#07e930','卯':'#07e930',
+    '巳':'#d30505','午':'#d30505',
+    '申':'#ef9104','酉':'#ef9104',
+    '亥':'#2e83f6','子':'#2e83f6',
+    '辰':'#8b6d03','戌':'#8b6d03','丑':'#8b6d03','未':'#8b6d03'
+  };
 
   var pw = 190; // A4 usable width in mm
   var ph = 287; // A4 usable height in mm (297 - margins)
@@ -1628,7 +1635,7 @@ function downloadPDF() {
   h += '<tr><td style="border:1px solid #ddd;padding:4px 3px;text-align:center;background:#fafafa;color:#888;font-size:8pt;">地支</td>';
   for (var i = 0; i < 4; i++) {
     var p = r.bazi[order[i]];
-    var zc = elemColor[p.zhi] || '#101010';
+    var zc = zhiColor[p.zhi] || '#101010';
     var bg = order[i] === 'day' ? ' style="background:#f7f4ee;"' : '';
     h += '<td style="border:1px solid #ddd;padding:6px 3px;text-align:center;font-size:14pt;font-weight:700;color:' + zc + ';"' + bg + '>' + p.zhi + '</td>';
   }
