@@ -180,6 +180,76 @@ def generate_pdf(result: dict) -> str:
 
     pdf.ln(5)
 
+    # ----- 关键用神摘要（高亮框） -----
+    report_data = result.get("report", {})
+    ks = report_data.get("key_gods_summary", {})
+
+    if ks:
+        # Gold border box
+        pdf.set_draw_color(*GOLD)
+        pdf.set_fill_color(253, 250, 242)  # #fdfaf2
+        # We'll draw a box manually
+        x0 = pdf.get_x()
+        y0 = pdf.get_y()
+        # Save the remaining page space check
+        _space_for(pdf, 35)
+        y0 = pdf.get_y()
+
+        # Draw box border (rect)
+        pdf.rect(x0, y0, 190, 0, style="D")  # height will be extended
+        pdf.set_xy(x0 + 4, y0 + 3)
+
+        # Title
+        pdf.set_font("zh", "B", 11)
+        pdf.set_text_color(*GOLD)
+        pdf.cell(0, 8, "关键用神", ln=True)
+        pdf.set_x(x0 + 4)
+
+        # 调候
+        th = ks.get("tiaohou", {})
+        if th.get("needed"):
+            pdf.set_font("zh", "B", 9)
+            pdf.set_text_color(*DARK)
+            pdf.cell(pdf.get_string_width("调候用神：") + 2, 6, "调候用神：", ln=False)
+            pdf.set_font("zh", "", 9)
+            needed_txt = "需要 " + "、".join(th["needed"])
+            if th.get("found") and len(th["found"]) > 0:
+                pdf.set_text_color(0, 119, 0)
+                needed_txt += "  ✓ 命中找到：" + "、".join(th["found"])
+            else:
+                pdf.set_text_color(204, 0, 0)
+                needed_txt += "  ✗ 原局有效位置未出现，需大运引动"
+            pdf.multi_cell(182, 6, needed_txt, new_x="LMARGIN", new_y="NEXT")
+            _space_for(pdf, 10)
+
+        # 格局喜神
+        gj = ks.get("geju", [])
+        for g in gj:
+            pdf.set_x(x0 + 4)
+            pdf.set_font("zh", "B", 9)
+            pdf.set_text_color(*DARK)
+            pdf.cell(pdf.get_string_width("格局喜神：") + 2, 6, "格局喜神：", ln=False)
+            pdf.set_font("zh", "", 9)
+            txt = f"旺气【{g['strong_element']}】需【{g['controller']}】来制衡"
+            if g.get("is_effective"):
+                pdf.set_text_color(0, 119, 0)
+                if g.get("in_bazi") and len(g["in_bazi"]) > 0:
+                    txt += "  ✓ 有效：" + "、".join(g["in_bazi"])
+                else:
+                    txt += f"  ✓ 月令藏气中有{g['controller']}"
+            else:
+                pdf.set_text_color(204, 0, 0)
+                txt += f"  ✗ {g['controller']}处于{g['controller_status']}地，力量不足"
+            pdf.multi_cell(182, 6, txt, new_x="LMARGIN", new_y="NEXT")
+            _space_for(pdf, 10)
+
+        # Close the box
+        _space_for(pdf, 8)
+        y1 = pdf.get_y()
+        pdf.set_draw_color(*GOLD)
+        pdf.rect(x0, y0, 190, y1 - y0, style="D")
+        pdf.ln(4)
+
     # ----- AI Report Sections -----
     report = result.get("report", {})
     sections = report.get("sections", [])

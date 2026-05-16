@@ -118,7 +118,11 @@ async def analyze_bazi_deep(data: BirthData):
         deep_report = generate_llm_report(result)
         
         # Replace report with LLM version
+        # Preserve key_gods_summary from rule-based report
+        original_report = result.get('report', {})
         result['report'] = deep_report
+        if isinstance(original_report, dict) and 'key_gods_summary' in original_report:
+            result['report']['key_gods_summary'] = original_report['key_gods_summary']
         result['is_deep'] = True
         result['_from_cache'] = False
         
@@ -147,7 +151,10 @@ async def analyze_bazi_pdf(data: BirthData):
         )
         from backend.engine.llm_report import generate_llm_report
         deep_report = generate_llm_report(result)
+        original_report = result.get('report', {})
         result['report'] = deep_report
+        if isinstance(original_report, dict) and 'key_gods_summary' in original_report:
+            result['report']['key_gods_summary'] = original_report['key_gods_summary']
         result['is_deep'] = True
         
         # Generate PDF from result
@@ -614,7 +621,10 @@ async def analyze_bazi_pdf_server(data: BirthData):
         )
         from backend.engine.llm_report import generate_llm_report
         deep_report = generate_llm_report(result)
+        original_report = result.get('report', {})
         result['report'] = deep_report
+        if isinstance(original_report, dict) and 'key_gods_summary' in original_report:
+            result['report']['key_gods_summary'] = original_report['key_gods_summary']
         result['is_deep'] = True
 
         from backend.engine.pdf_server import generate_pdf

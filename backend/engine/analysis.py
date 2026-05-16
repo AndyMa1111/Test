@@ -638,4 +638,66 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
     
     sections.append(summary_section)
     
-    return {'sections': sections}
+    # ===== 关键用神摘要（用于PDF和前端高亮显示） =====
+    key_gods_summary = {}
+    
+    # --- 调候 ---
+    tiaohou_gods = []
+    if tiaohou and tiaohou.get('key_gods'):
+        god_chars = [g['gan_char'] for g in tiaohou['key_gods'][:3]]
+        hour_zhi_char = result['bazi']['hour']['zhi']
+        hour_zhi_benqi_hidden = DI_ZHI_ZANG_GAN.get(hour_zhi_char, [''])[0]
+        
+        found_positions = []
+        # Check year/month/hour heavenly stems
+        for pos_key, pos_name in [('year','年'), ('month','月'), ('hour','时')]:
+            p_gan = result['bazi'].get(pos_key, {}).get('gan', '')
+            if p_gan in god_chars:
+                found_positions.append(f'{p_gan}（{pos_name}柱天干）')
+        # Check hour branch 本气
+        if hour_zhi_benqi_hidden in god_chars and not any(hour_zhi_benqi_hidden in fp for fp in found_positions):
+            found_positions.append(f'{hour_zhi_benqi_hidden}（时支{hour_zhi_char}本气）')
+        
+        tiaohou_gods = {
+            'needed': god_chars,
+            'found': found_positions,
+            'missing': [g for g in god_chars if g not in [result['bazi'][pk]['gan'] for pk in ['year','month','hour']] and g != hour_zhi_benqi_hidden],
+        }
+    
+    key_gods_summary['tiaohou'] = tiaohou_gods if tiaohou_gods else {'needed': [], 'found': [], 'missing': []}
+    
+    # --- 格局喜神 ---
+    geju_balance = []
+    for se in strongest_elements:
+        controller = controlling[se]
+        controller_wx = wangshuai.get(controller, '')
+        is_effective = controller_wx in ['旺', '相']
+        # Find which Gan/Zhi in the 八字 match this element
+        element_gan_map = {'木': '甲乙', '火': '丙丁', '土': '戊己', '金': '庚辛', '水': '壬癸'}
+        matching_gans = []
+        matching_zhi = []
+        contr_chars = element_gan_map.get(controller, '')
+        for pk in ['year', 'month', 'day', 'hour']:
+            p = result['bazi'].get(pk, {})
+            g = p.get('gan', '')
+            z = p.get('zhi', '')
+            if g in contr_chars:
+                matching_gans.append(f'{g}（{pk}柱天干）')
+            if z in contr_chars:
+                matching_zhi.append(f'{z}（{pk}柱地支）')
+        # Also check hidden stems in month branch for the controller
+        month_hiddens = DI_ZHI_ZANG_GAN.get(result['bazi']['month']['zhi'], [])
+        month_got = any(h in contr_chars for h in month_hiddens)
+        
+        geju_balance.append({
+            'strong_element': se,
+            'controller': controller,
+            'controller_status': controller_wx,
+            'is_effective': is_effective,
+            'in_bazi': matching_gans + matching_zhi,
+            'has_month_hidden': month_got,
+        })
+    
+    key_gods_summary['geju'] = geju_balance
+    
+    return {'sections': sections, 'key_gods_summary': key_gods_summary}

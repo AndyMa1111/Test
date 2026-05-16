@@ -1280,6 +1280,43 @@ function renderReport(report) {
     return;
   }
   var html = '';
+
+  // --- 关键用神摘要（高亮显示） ---
+  var ks = report.key_gods_summary;
+  if (ks && ((ks.tiaohou && ks.tiaohou.needed && ks.tiaohou.needed.length > 0) || (ks.geju && ks.geju.length > 0))) {
+    html += '<div style="background:#fdfaf2;border:1.5px solid #b2955d;border-radius:8px;padding:12px 16px;margin:0 0 14px 0;">';
+    html += '<div style="font-size:11pt;font-weight:700;color:#b2955d;margin-bottom:6px;">🔮 关键用神</div>';
+
+    var th = ks.tiaohou || {};
+    if (th.needed && th.needed.length > 0) {
+      html += '<div style="margin:4px 0;line-height:1.7;"><span style="color:#b2955d;font-weight:600;">调候用神：</span>';
+      html += '需要 ' + th.needed.join('、');
+      if (th.found && th.found.length > 0) {
+        html += ' → <span style="color:#070;font-weight:600;">✓ ' + th.found.join('、') + '</span>';
+      } else {
+        html += ' → <span style="color:#c00;">✗ 原局有效位置未出现，需大运引动</span>';
+      }
+      html += '</div>';
+    }
+
+    var gj = ks.geju || [];
+    for (var gi = 0; gi < gj.length; gi++) {
+      var g = gj[gi];
+      html += '<div style="margin:4px 0;line-height:1.7;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
+      html += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
+      if (g.is_effective) {
+        html += ' → <span style="color:#070;font-weight:600;">✓ 有效：';
+        html += (g.in_bazi && g.in_bazi.length > 0) ? g.in_bazi.join('、') : '月令藏气中有' + g.controller;
+        html += '</span>';
+      } else {
+        html += ' → <span style="color:#c00;">✗ ' + g.controller + '处于' + g.controller_status + '地，力量不足</span>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+  }
+
   for (var i = 0; i < report.sections.length; i++) {
     var section = report.sections[i];
     var isCritical = section.severity === 'critical';
@@ -1627,6 +1664,46 @@ function downloadPDF() {
   }
   h += '</tr>';
   h += '</table>';
+
+  // --- 关键用神摘要 ---
+  if (r.report && r.report.key_gods_summary) {
+    var ks = r.report.key_gods_summary;
+    h += '<div style="background:#fdfaf2;border:1.5px solid #b2955d;border-radius:6px;padding:10px 14px;margin:14px 0;font-size:9.5pt;">';
+    h += '<div style="font-size:10pt;font-weight:700;color:#b2955d;margin-bottom:6px;">🔮 关键用神</div>';
+
+    // 调候
+    var th = ks.tiaohou || {};
+    if (th.needed && th.needed.length > 0) {
+      h += '<div style="margin:4px 0;"><span style="color:#b2955d;font-weight:600;">调候用神：</span>';
+      h += '需要 ' + th.needed.join('、');
+      if (th.found && th.found.length > 0) {
+        h += ' → <span style="color:#070;font-weight:600;">✓ 命中找到：' + th.found.join('、') + '</span>';
+      } else {
+        h += ' → <span style="color:#c00;">✗ 原局有效位置未出现，需大运引动</span>';
+      }
+      h += '</div>';
+    }
+
+    // 格局喜神
+    var gj = ks.geju || [];
+    if (gj.length > 0) {
+      for (var gi = 0; gi < gj.length; gi++) {
+        var g = gj[gi];
+        h += '<div style="margin:4px 0;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
+        h += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
+        if (g.is_effective) {
+          h += ' → <span style="color:#070;font-weight:600;">✓ 有效：';
+          h += (g.in_bazi && g.in_bazi.length > 0) ? g.in_bazi.join('、') : '月令藏气中有' + g.controller;
+          h += '</span>';
+        } else {
+          h += ' → <span style="color:#c00;">✗ ' + g.controller + '处于' + g.controller_status + '地，力量不足</span>';
+        }
+        h += '</div>';
+      }
+    }
+
+    h += '</div>';
+  }
 
   // --- AI Report Sections ---
   for (var i = 0; i < r.report.sections.length; i++) {
