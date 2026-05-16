@@ -1305,14 +1305,11 @@ function renderReport(report) {
       html += '<div style="margin:4px 0;line-height:1.7;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
       html += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
       var hasBazi = g.in_bazi && g.in_bazi.length > 0;
-      if (g.is_effective) {
-        html += ' → <span style="color:#070;font-weight:600;">✓ 有效制衡';
-        if (hasBazi) html += '（天干：' + g.in_bazi.join('、') + '）';
-        html += '</span>';
-      } else {
-        html += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地，力量不足';
-        if (hasBazi) html += '（但天干有' + g.in_bazi.join('、') + '，需大运引动）';
-        html += '</span>';
+      if (hasBazi) {
+        html += ' → <span>' + g.in_bazi.join('、') + '</span>';
+      }
+      if (!g.is_effective && !hasBazi) {
+        html += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地</span>';
       }
       html += '</div>';
     }
@@ -1690,14 +1687,11 @@ function downloadPDF() {
       h += '<div style="margin:4px 0;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
       h += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
       var hasBazi = g.in_bazi && g.in_bazi.length > 0;
-      if (g.is_effective) {
-        h += ' → <span style="color:#070;font-weight:600;">✓ 有效制衡';
-        if (hasBazi) h += '（天干：' + g.in_bazi.join('、') + '）';
-        h += '</span>';
-      } else {
-        h += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地，力量不足';
-        if (hasBazi) h += '（但天干有' + g.in_bazi.join('、') + '，需大运引动）';
-        h += '</span>';
+      if (hasBazi) {
+        h += ' → <span>' + g.in_bazi.join('、') + '</span>';
+      }
+      if (!g.is_effective && !hasBazi) {
+        h += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地</span>';
       }
       h += '</div>';
     }

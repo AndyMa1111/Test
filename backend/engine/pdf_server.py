@@ -232,16 +232,12 @@ def generate_pdf(result: dict) -> str:
             pdf.set_font("zh", "", 9)
             txt = f"旺气【{g['strong_element']}】需【{g['controller']}】来制衡"
             has_bazi = bool(g.get("in_bazi") and len(g["in_bazi"]) > 0)
-            if g.get("is_effective"):
-                pdf.set_text_color(0, 119, 0)
-                txt += "  ✓ 有效制衡"
-                if has_bazi:
-                    txt += "（天干：" + "、".join(g["in_bazi"]) + "）"
-            else:
+            if has_bazi:
+                pdf.set_text_color(*DARK)
+                txt += "  " + "、".join(g["in_bazi"])
+            elif not g.get("is_effective"):
                 pdf.set_text_color(204, 0, 0)
-                txt += f"  ✗ {g['controller']}在{g['controller_status']}地，力量不足"
-                if has_bazi:
-                    txt += "（但天干有" + "、".join(g["in_bazi"]) + "，需大运引动）"
+                txt += f"  ✗ {g['controller']}在{g['controller_status']}地"
             pdf.multi_cell(182, 6, txt, new_x="LMARGIN", new_y="NEXT")
             _space_for(pdf, 10)
 
