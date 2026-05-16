@@ -286,7 +286,7 @@
   }
   .bazi-cell-small {
     padding: 6px 4px;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: var(--text2);
     border-right: 1px solid var(--border);
   }
@@ -1246,7 +1246,9 @@ function renderBazi(bazi, metaData) {
     rows[4] += '<div class="bazi-cell-small" style="color:#999;">' + ny + '</div>';
 
     // Row 5: 神煞
-    rows[5] += '<div class="bazi-cell-small" style="color:var(--text2);">-</div>';
+    var ssList = p.shensha || [];
+    var ssHtml = ssList.length > 0 ? ssList.join(' ') : '-';
+    rows[5] += '<div class="bazi-cell-small" style="line-height:1.4;">' + ssHtml + '</div>';
   }
 
   // Compose table with left labels

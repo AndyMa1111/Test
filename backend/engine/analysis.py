@@ -88,6 +88,116 @@ for g1, g2, n in _nayin_data:
 def get_nayin(gan: str, zhi: str) -> str:
     """Get 纳音 for a 干支 pair."""
     return NAYIN_MAP.get(gan + zhi, "")
+
+
+# ─── 神煞计算 ───
+
+# 三合局映射（用于桃花/驿马/华盖/劫煞/灾煞/岁煞/将星）
+SAN_HE = {
+    "寅": {"members": ["寅","午","戌"], "taohua": "卯", "yima": "申", "huagai": "戌",
+           "jiesha": "亥", "zaisha": "子", "suisha": "丑", "jiangxing": "午"},
+    "午": {"members": ["寅","午","戌"], "taohua": "卯", "yima": "申", "huagai": "戌",
+           "jiesha": "亥", "zaisha": "子", "suisha": "丑", "jiangxing": "午"},
+    "戌": {"members": ["寅","午","戌"], "taohua": "卯", "yima": "申", "huagai": "戌",
+           "jiesha": "亥", "zaisha": "子", "suisha": "丑", "jiangxing": "午"},
+    "巳": {"members": ["巳","酉","丑"], "taohua": "午", "yima": "亥", "huagai": "丑",
+           "jiesha": "寅", "zaisha": "卯", "suisha": "辰", "jiangxing": "酉"},
+    "酉": {"members": ["巳","酉","丑"], "taohua": "午", "yima": "亥", "huagai": "丑",
+           "jiesha": "寅", "zaisha": "卯", "suisha": "辰", "jiangxing": "酉"},
+    "丑": {"members": ["巳","酉","丑"], "taohua": "午", "yima": "亥", "huagai": "丑",
+           "jiesha": "寅", "zaisha": "卯", "suisha": "辰", "jiangxing": "酉"},
+    "申": {"members": ["申","子","辰"], "taohua": "酉", "yima": "寅", "huagai": "辰",
+           "jiesha": "巳", "zaisha": "午", "suisha": "未", "jiangxing": "子"},
+    "子": {"members": ["申","子","辰"], "taohua": "酉", "yima": "寅", "huagai": "辰",
+           "jiesha": "巳", "zaisha": "午", "suisha": "未", "jiangxing": "子"},
+    "辰": {"members": ["申","子","辰"], "taohua": "酉", "yima": "寅", "huagai": "辰",
+           "jiesha": "巳", "zaisha": "午", "suisha": "未", "jiangxing": "子"},
+    "亥": {"members": ["亥","卯","未"], "taohua": "子", "yima": "巳", "huagai": "未",
+           "jiesha": "申", "zaisha": "酉", "suisha": "戌", "jiangxing": "卯"},
+    "卯": {"members": ["亥","卯","未"], "taohua": "子", "yima": "巳", "huagai": "未",
+           "jiesha": "申", "zaisha": "酉", "suisha": "戌", "jiangxing": "卯"},
+    "未": {"members": ["亥","卯","未"], "taohua": "子", "yima": "巳", "huagai": "未",
+           "jiesha": "申", "zaisha": "酉", "suisha": "戌", "jiangxing": "卯"},
+}
+
+# 天乙贵人: 日干 → 地支
+TIANYI = {
+    "甲": ("丑","未"),"戊": ("丑","未"),"庚": ("丑","未"),
+    "乙": ("子","申"),"己": ("子","申"),
+    "丙": ("亥","酉"),"丁": ("亥","酉"),
+    "壬": ("卯","巳"),"癸": ("卯","巳"),
+    "辛": ("午","寅"),
+}
+
+# 文昌贵人: 日干 → 地支
+WENCHANG = {"甲":"巳","乙":"午","丙":"申","丁":"酉","戊":"申","己":"酉","庚":"亥","辛":"子","壬":"寅","癸":"卯"}
+
+# 天德: 月支 → 所查(天干或地支)
+TIANDE = {
+    "寅":"丁","卯":"申","辰":"壬","巳":"辛","午":"亥","未":"甲",
+    "申":"癸","酉":"寅","戌":"丙","亥":"乙","子":"巳","丑":"庚",
+}
+
+# 月德: 月支 → 天干
+YUEDE = {
+    "寅":"丙","午":"丙","戌":"丙",
+    "亥":"甲","卯":"甲","未":"甲",
+    "申":"壬","子":"壬","辰":"壬",
+    "巳":"庚","酉":"庚","丑":"庚",
+}
+
+# 羊刃: 阳日干 → 地支
+YANGREN = {"甲":"卯","丙":"午","戊":"午","庚":"酉","壬":"子"}
+
+
+def get_shensha(day_gan: str, day_zhi: str, month_zhi: str,
+                pillar_gan: str, pillar_zhi: str) -> list:
+    """
+    Compute 神煞 for a single pillar.
+    Returns a list of 神煞 names present in this pillar.
+    """
+    result = []
+
+    # 1. 天乙贵人 (日干查地支)
+    tianyi_zhi = TIANYI.get(day_gan, ())
+    if pillar_zhi in tianyi_zhi:
+        result.append("天乙贵人")
+
+    # 2. 文昌贵人 (日干查地支)
+    if pillar_zhi == WENCHANG.get(day_gan, ""):
+        result.append("文昌贵人")
+
+    # 3. 天德 (月支查天干/地支)
+    tian_de_val = TIANDE.get(month_zhi, "")
+    if pillar_gan == tian_de_val or pillar_zhi == tian_de_val:
+        result.append("天德")
+
+    # 4. 月德 (月支查天干)
+    if pillar_gan == YUEDE.get(month_zhi, ""):
+        result.append("月德")
+
+    # 5. 桃花、驿马、华盖、劫煞、灾煞、岁煞 (日支查)
+    he_data = SAN_HE.get(day_zhi)
+    if he_data:
+        if pillar_zhi == he_data["taohua"]:
+            result.append("桃花")
+        if pillar_zhi == he_data["yima"]:
+            result.append("驿马")
+        if pillar_zhi == he_data["huagai"]:
+            result.append("华盖")
+        if pillar_zhi == he_data["jiesha"]:
+            result.append("劫煞")
+
+    # 6. 将星 (只以日支查)
+    if he_data and pillar_zhi == he_data["jiangxing"]:
+        result.append("将星")
+
+    # 7. 羊刃 (阳日干查地支)
+    if pillar_zhi == YANGREN.get(day_gan, ""):
+        result.append("羊刃")
+
+    return result
+
 def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 0,
                       gender: str = '男', calendar: str = '公历') -> dict:
     """
@@ -212,6 +322,8 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
                 'shi_shen': shi_shen_result['year']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['year']['gan'] % 2],
                 'nayin': get_nayin(pillars['year']['gan_char'], pillars['year']['zhi_char']),
+                'shensha': get_shensha(day_gan_char, pillars['day']['zhi_char'], pillars['month']['zhi_char'],
+                                        pillars['year']['gan_char'], pillars['year']['zhi_char']),
             },
             'month': {
                 'gan': pillars['month']['gan_char'],
@@ -219,6 +331,8 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
                 'shi_shen': shi_shen_result['month']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['month']['gan'] % 2],
                 'nayin': get_nayin(pillars['month']['gan_char'], pillars['month']['zhi_char']),
+                'shensha': get_shensha(day_gan_char, pillars['day']['zhi_char'], pillars['month']['zhi_char'],
+                                        pillars['month']['gan_char'], pillars['month']['zhi_char']),
             },
             'day': {
                 'gan': pillars['day']['gan_char'],
@@ -226,6 +340,8 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
                 'shi_shen': '日主',
                 'yin_yang': ['阳', '阴'][pillars['day']['gan'] % 2],
                 'nayin': get_nayin(pillars['day']['gan_char'], pillars['day']['zhi_char']),
+                'shensha': get_shensha(day_gan_char, pillars['day']['zhi_char'], pillars['month']['zhi_char'],
+                                        pillars['day']['gan_char'], pillars['day']['zhi_char']),
             },
             'hour': {
                 'gan': pillars['hour']['gan_char'],
@@ -233,6 +349,8 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
                 'shi_shen': shi_shen_result['hour']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['hour']['gan'] % 2],
                 'nayin': get_nayin(pillars['hour']['gan_char'], pillars['hour']['zhi_char']),
+                'shensha': get_shensha(day_gan_char, pillars['day']['zhi_char'], pillars['month']['zhi_char'],
+                                        pillars['hour']['gan_char'], pillars['hour']['zhi_char']),
             },
         },
         'zanggan': zanggan_analysis,
