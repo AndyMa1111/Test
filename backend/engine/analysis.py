@@ -674,17 +674,14 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
         is_effective = controller_wx in ['旺', '相']
         # Find which Gan/Zhi in the 八字 match this element
         element_gan_map = {'木': '甲乙', '火': '丙丁', '土': '戊己', '金': '庚辛', '水': '壬癸'}
+        pos_names = {'year': '年', 'month': '月', 'day': '日', 'hour': '时'}
         matching_gans = []
-        matching_zhi = []
         contr_chars = element_gan_map.get(controller, '')
         for pk in ['year', 'month', 'day', 'hour']:
             p = result['bazi'].get(pk, {})
             g = p.get('gan', '')
-            z = p.get('zhi', '')
             if g in contr_chars:
-                matching_gans.append(f'{g}（{pk}柱天干）')
-            if z in contr_chars:
-                matching_zhi.append(f'{z}（{pk}柱地支）')
+                matching_gans.append(f'{g}（{pos_names[pk]}柱天干）')
         # Also check hidden stems in month branch for the controller
         month_hiddens = DI_ZHI_ZANG_GAN.get(result['bazi']['month']['zhi'], [])
         month_got = any(h in contr_chars for h in month_hiddens)
