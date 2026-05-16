@@ -86,17 +86,25 @@
   .topbar .logo-text span { color: var(--gold); }
   .topbar .nav-items {
     display: flex;
-    gap: 8px;
+    gap: 4px;
   }
   .topbar .nav-item {
-    padding: 8px 18px;
-    font-size: 0.92rem;
+    padding: 6px 12px;
+    font-size: 0.88rem;
     color: var(--text2);
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s;
     position: relative;
     font-weight: 400;
+    white-space: nowrap;
+  }
+  @media (max-width: 480px) {
+    .topbar { padding: 0 12px; }
+    .topbar .logo-text { font-size: 1rem; }
+    .topbar .logo-icon { width: 30px; height: 30px; font-size: 15px; }
+    .topbar .nav-item { padding: 4px 8px; font-size: 0.82rem; }
+    .topbar .nav-items { gap: 2px; }
   }
   .topbar .nav-item:hover { color: var(--gold); }
   .topbar .nav-item.active {
@@ -882,7 +890,7 @@
   .hero {
     min-height: calc(100vh - var(--header-h));
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 60px 24px;
+    text-align: center; padding: calc(var(--header-h) + 40px) 24px 60px;
     background: linear-gradient(180deg, #faf8f4 0%, #f5f5f7 100%);
   }
   .hero-icon {
