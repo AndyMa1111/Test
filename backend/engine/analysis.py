@@ -231,12 +231,13 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
     month_zhi_char = pillars['month']['zhi_char']
     month_hidden = DI_ZHI_ZANG_GAN[month_zhi_char]
     month_hidden_indexes = []
+    pos_cn = {'year': '年', 'month': '月', 'hour': '时'}
     for gan_char in month_hidden:
         for key in ['year', 'month', 'hour']:
             if pillars[key]['gan_char'] == gan_char:
                 month_hidden_indexes.append({
                     'gan_char': gan_char,
-                    'position': key,
+                    'position': pos_cn[key],
                 })
     
     # 月令透出 = month hidden stem appears in year/month/hour stem
@@ -439,7 +440,7 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
         
         # Check if any key god appears in effective positions
         # (1) year/month/hour heavenly stem, (2) hour branch's 本气
-        effective_positions = ['year', 'month', 'hour']
+        effective_positions = [('year', '年'), ('month', '月'), ('hour', '时')]
         effective_gods = []
         missing_gods = []
         
@@ -451,9 +452,9 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
         for god in god_names:
             found = False
             # Check heavenly stems
-            for pos in effective_positions:
-                if result['bazi'].get(pos, {}).get('gan') == god:
-                    effective_gods.append(f'{god}（{pos}柱天干）')
+            for pos_key, pos_cn in effective_positions:
+                if result['bazi'].get(pos_key, {}).get('gan') == god:
+                    effective_gods.append(f'{god}（{pos_cn}柱天干）')
                     found = True
                     break
             # Check hour branch's 本气
