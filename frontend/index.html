@@ -492,6 +492,112 @@
   @keyframes paySpin { to { transform: rotate(360deg); } }
 
 
+  
+  /* ======= 大运水平滚动 ======= */
+  .dy-scroll-wrap {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin: 8px 0;
+  }
+  .dy-scroll-wrap::-webkit-scrollbar { height: 4px; }
+  .dy-scroll-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .dy-row {
+    display: flex;
+    gap: 8px;
+    min-width: min-content;
+  }
+  .dy-card {
+    flex: 0 0 auto;
+    width: 72px;
+    text-align: center;
+    padding: 10px 4px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .dy-card:hover {
+    border-color: var(--gold);
+    background: var(--gold-light);
+  }
+  .dy-card-xiaoyun {
+    border-style: dashed;
+    border-color: #ccc;
+    background: #fafafa;
+  }
+  .dy-card-xiaoyun:hover {
+    border-color: var(--gold);
+    background: #f5f0e8;
+  }
+  .dy-card-active {
+    border-color: var(--gold);
+    background: var(--gold-light);
+    box-shadow: 0 0 0 2px rgba(178,149,93,0.2);
+  }
+  .dy-num {
+    font-size: 0.65rem;
+    color: var(--text2);
+    margin-bottom: 2px;
+  }
+  .dy-gan {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .dy-zhi {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .dy-age {
+    font-size: 0.7rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* ======= 流年水平滚动 ======= */
+  .ly-scroll-wrap {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .ly-scroll-wrap::-webkit-scrollbar { height: 4px; }
+  .ly-scroll-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .ly-row {
+    display: flex;
+    gap: 6px;
+    min-width: min-content;
+  }
+  .ly-item {
+    flex: 0 0 auto;
+    width: 56px;
+    text-align: center;
+    padding: 6px 2px 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafafa;
+  }
+  .ly-item-now {
+    background: var(--gold-light);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  .ly-year {
+    font-size: 0.72rem;
+    color: var(--text2);
+    margin-bottom: 1px;
+  }
+  .ly-gan {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .ly-zhi {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
   /* ======= Toggle Switch ======= */
   .toggle-row {
     display: flex;
@@ -705,23 +811,6 @@
         ← 返回重新输入
       </button>
     </div>
-    <!-- 命理分析报告（核心） -->
-    <div class="card report-card">
-      <div class="card-title report-title">📋 命理分析报告</div>
-      <div id="report-display"></div>
-      <div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:14px;">
-        <button id="deep-btn" onclick="triggerDeepAnalysis()" class="btn btn-primary" style="font-size:0.92rem;">
-          🤖 AI 深度解读
-        </button>
-        <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
-        <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
-          <button onclick="downloadPDF()" class="btn btn-success" style="font-size:0.9rem;">
-            📥 下载 PDF
-          </button>
-          <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">如移动端无法下载，请在 PC 端浏览器中打开下载</p>
-        </div>
-      </div>
-    </div>
 
     <!-- 用户基本信息 -->
     <div class="card">
@@ -736,6 +825,12 @@
       <div class="card-title">📜 四柱八字</div>
       <div id="bazi-display" class="bazi-grid"></div>
       <div id="bazi-meta"></div>
+    </div>
+
+    <!-- 大运 -->
+    <div class="card">
+      <div class="card-title">🚀 大运</div>
+      <div id="dayun-display"></div>
     </div>
 
     <!-- 旺衰 -->
@@ -758,10 +853,22 @@
       <div id="geju-display"></div>
     </div>
 
-    <!-- 大运 -->
-    <div class="card">
-      <div class="card-title">🚀 大运</div>
-      <div id="dayun-display"></div>
+    <!-- 命理分析报告（核心） -->
+    <div class="card report-card">
+      <div class="card-title report-title">📋 命理分析报告</div>
+      <div id="report-display"></div>
+      <div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:14px;">
+        <button id="deep-btn" onclick="triggerDeepAnalysis()" class="btn btn-primary" style="font-size:0.92rem;">
+          🤖 AI 深度解读
+        </button>
+        <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
+        <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
+          <button onclick="downloadPDF()" class="btn btn-success" style="font-size:0.9rem;">
+            📥 下载 PDF
+          </button>
+          <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">如移动端无法下载，请在 PC 端浏览器中打开下载</p>
+        </div>
+      </div>
     </div>
 
     <div class="disclaimer">
@@ -855,7 +962,7 @@ function doAnalysis() {
     renderWangshuai(result.wangshuai);
     renderTiaohou(result.tiaohou, result.qiongtong_text, result.tiyao_entry);
     renderGeju(result.geju);
-    renderDayun(result.dayun);
+    renderDayun(result.dayun, data.year); window._birthMonth = data.month;
     // Hide report section and enable deep button
     document.getElementById('report-display').innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">点击下方 "AI 深度解读" 按钮生成完整分析报告。</p>';
     document.getElementById('pdf-btn-row').classList.remove('active');
@@ -1007,7 +1114,7 @@ function renderResult(r) {
   renderWangshuai(r.wangshuai);
   renderTiaohou(r.tiaohou, r.qiongtong_text, r.tiyao_entry);
   renderGeju(r.geju);
-  renderDayun(r.dayun);
+  renderDayun(r.dayun, parseInt(r.birth_date) || 1990);
 }
 
 function renderReport(report) {
@@ -1405,25 +1512,140 @@ function renderGeju(geju) {
   container.innerHTML = html;
 }
 
-function renderDayun(dayun) {
+function renderDayun(dayun, birthYear) {
   var container = document.getElementById('dayun-display');
   var direction = dayun.forward ? '顺排' : '逆排';
-  var startText = dayun.starting_age + '岁';
+  var startText = dayun.starting_years + '岁';
   if (dayun.starting_months && dayun.starting_months > 0) {
     startText = dayun.starting_years + '岁' + dayun.starting_months + '个月';
   }
-  var html = '<p style="margin-bottom:10px;font-size:0.9rem;">起运：<strong>' + startText + '</strong> · 排法：' + direction + '</p>';
-  html += '<table class="luck-table"><thead><tr><th>大运</th><th>干支</th><th>五行</th><th>年龄</th></tr></thead><tbody>';
-  var elemMap = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
-  for (var i = 0; i < dayun.luck_cycles.length; i++) {
-    var cycle = dayun.luck_cycles[i];
-    var elem = elemMap[cycle.gan_char] || '';
-    html += '<tr><td>' + (i + 1) + '</td><td><strong>' + cycle.gan_char + cycle.zhi_char + '</strong></td>';
-    html += '<td style="color:var(--text2);font-size:0.85rem;">' + elem + '</td><td>' + cycle.age_range + '</td></tr>';
+
+  var elemColor = {
+    '甲':'#07e930','乙':'#07e930',
+    '丙':'#d30505','丁':'#d30505',
+    '戊':'#8b6d03','己':'#8b6d03',
+    '庚':'#ef9104','辛':'#ef9104',
+    '壬':'#2e83f6','癸':'#2e83f6'
+  };
+  var zhiColor = {
+    '寅':'#07e930','卯':'#07e930',
+    '巳':'#d30505','午':'#d30505',
+    '申':'#ef9104','酉':'#ef9104',
+    '亥':'#2e83f6','子':'#2e83f6',
+    '辰':'#8b6d03','戌':'#8b6d03','丑':'#8b6d03','未':'#8b6d03'
+  };
+  var tg = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  var dz = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+  function getGZ(year) {
+    return tg[(year - 4) % 10] + dz[(year - 4) % 12];
   }
-  html += '</tbody></table>';
-  html += '<p style="margin-top:8px;font-size:0.82rem;color:var(--text2);">大运详细分析请见上方命理分析报告。</p>';
+
+  // Store data for interactive selection
+  window._dayunData = dayun;
+  window._birthYear = birthYear;
+  window._birthMonth = 0;
+
+  var html = '<p style="margin-bottom:12px;font-size:0.9rem;">起运：<strong>' + startText + '</strong> · 排法：' + direction + '</p>';
+
+  // 大运 horizontal row
+  html += '<div class="dy-scroll-wrap"><div class="dy-row" id="dy-row">';
+
+  // 小运 card (age 0 to first 大运 start)
+  var firstAge = parseInt(dayun.luck_cycles[0].age_range.replace('岁', '').split('-')[0]);
+  html += '<div class="dy-card dy-card-xiaoyun dy-card-active" data-dy-idx="-1" onclick="selectDayun(-1)" title="出生至首步大运">';
+  html += '<div class="dy-num">小运</div>';
+  html += '<div class="dy-gan" style="color:#999;font-size:1.1rem;">幼</div>';
+  html += '<div class="dy-zhi" style="color:#999;font-size:1.1rem;">年</div>';
+  html += '<div class="dy-age">0-' + (firstAge - 1) + '岁</div>';
+  html += '</div>';
+
+  for (var i = 0; i < dayun.luck_cycles.length; i++) {
+    var c = dayun.luck_cycles[i];
+    var gc = elemColor[c.gan_char] || '#101010';
+    var zc = zhiColor[c.zhi_char] || '#101010';
+    var activeClass = '';
+    html += '<div class="dy-card' + activeClass + '" data-dy-idx="' + i + '" onclick="selectDayun(' + i + ')">';
+    html += '<div class="dy-num">' + (i + 1) + '</div>';
+    // 干支竖排: 天干在上, 地支在下
+    html += '<div class="dy-gan" style="color:' + gc + ';">' + c.gan_char + '</div>';
+    html += '<div class="dy-zhi" style="color:' + zc + ';">' + c.zhi_char + '</div>';
+    html += '<div class="dy-age">' + c.age_range + '</div>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+
+  // 流年 section (initially show 小运's 流年)
+  html += '<div style="margin-top:16px;font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:8px;">📅 流年</div>';
+  html += '<div class="ly-scroll-wrap"><div class="ly-row" id="ly-row">';
+  // Render 小运's 流年 (birth to first 大运 start)
+  var firstAge = dayun.starting_years || 0;
+  if (dayun.starting_months && dayun.starting_months > 0) firstAge++;
+  var yearStart = (birthYear || 1990);
+  // 小运固定从出生年起
+  for (var y = 0; y < firstAge; y++) {
+    var yr = yearStart + y;
+    var gz = getGZ(yr);
+    var now = new Date().getFullYear();
+    var hl = yr === now ? ' ly-item-now' : '';
+    html += '<div class="ly-item' + hl + '">';
+    html += '<div class="ly-year">' + yr + '</div>';
+    html += '<div class="ly-gan">' + gz[0] + '</div>';
+    html += '<div class="ly-zhi">' + gz[1] + '</div>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+
   container.innerHTML = html;
+}
+
+/* Select a 大运 and show its 10 流年 */
+function selectDayun(idx) {
+  var cards = document.querySelectorAll('.dy-card');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].classList.remove('dy-card-active');
+  }
+  var card = document.querySelector('.dy-card[data-dy-idx="' + idx + '"]');
+  if (card) card.classList.add('dy-card-active');
+
+  var dayun = window._dayunData;
+  var birthYear = window._birthYear || 1990;
+  if (!dayun || !dayun.luck_cycles) return;
+
+  var tg = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  var dz = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+  var yearStart, yearCount;
+  var startY = dayun.starting_years || 0;
+  var startM = dayun.starting_months || 0;
+  var birthMonth = window._birthMonth || 6;
+
+  if (idx === -1) {
+    // 小运: from birth year to first 大运 start (inclusive if months spill)
+    yearStart = birthYear;
+    yearCount = startY + (startM > 0 ? 1 : 0);
+  } else {
+    // 大运: calculate exact start year accounting for months
+    var baseStartYear = birthYear + startY + idx * 10;
+    // If starting months push past December, advance one year
+    var totalMonth = birthMonth + startM;
+    yearStart = baseStartYear + (totalMonth > 12 ? 1 : 0);
+    yearCount = 10;
+  }
+
+  var html = '';
+  var now = new Date().getFullYear();
+  for (var y = 0; y < yearCount; y++) {
+    var yr = yearStart + y;
+    var gz = tg[(yr - 4) % 10] + dz[(yr - 4) % 12];
+    var hl = yr === now ? ' ly-item-now' : '';
+    html += '<div class="ly-item' + hl + '">';
+    html += '<div class="ly-year">' + yr + '</div>';
+    html += '<div class="ly-gan">' + gz[0] + '</div>';
+    html += '<div class="ly-zhi">' + gz[1] + '</div>';
+    html += '</div>';
+  }
+  document.getElementById('ly-row').innerHTML = html;
 }
 
 /* ─── 真太阳时 ─── */
