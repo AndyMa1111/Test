@@ -8,54 +8,119 @@
   /* ======= 全局 ======= */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f8f9fa;
+    --bg: #f5f5f7;
     --card: #ffffff;
-    --text: #1a1a2e;
-    --text2: #555;
-    --border: #e0e0e0;
-    --accent: #c0392b;
-    --accent2: #e74c3c;
-    --gold: #8b6914;
-    --yin: #3498db;
-    --yang: #e74c3c;
-    --wood: #27ae60;
-    --fire: #e74c3c;
-    --earth: #f39c12;
-    --metal: #7f8c8d;
-    --water: #2980b9;
-    --radius: 12px;
-    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --text: #101010;
+    --text2: #878787;
+    --border: #e8e8e8;
+    --gold: #b2955d;
+    --gold-light: #f7f4ee;
+    --gold-dark: #a98d55;
+    --yin: #2e83f6;
+    --yang: #d30505;
+    --wood: #07e930;
+    --fire: #d30505;
+    --earth: #8b6d03;
+    --metal: #ef9104;
+    --water: #2e83f6;
+    --radius: 15px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.05);
+    --header-h: 68px;
   }
   html { font-size: 15px; }
   body {
-    font-family: -apple-system, "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
     min-height: 100vh;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  a { color: var(--gold); text-decoration: none; }
+  a:hover { color: var(--gold-dark); text-decoration: none; }
+
+  /* ======= Top Nav Bar ======= */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+  }
+  .topbar-inner {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .topbar .logo-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+  .topbar .logo-text span { color: var(--gold); }
+  .topbar .nav-items {
+    display: flex;
+    gap: 8px;
+  }
+  .topbar .nav-item {
+    padding: 8px 18px;
+    font-size: 0.92rem;
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    position: relative;
+    font-weight: 400;
+  }
+  .topbar .nav-item:hover { color: var(--gold); }
+  .topbar .nav-item.active {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .topbar .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+  }
 
   /* ======= Layout ======= */
-  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-
-  /* ======= Header ======= */
-  header {
-    text-align: center;
-    padding: 40px 0 30px;
-  }
-  header h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: var(--text);
-  }
-  header h1 .accent { color: var(--accent); }
-  header p {
-    color: var(--text2);
-    font-size: 0.92rem;
-    margin-top: 4px;
+  .container {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    padding-top: calc(var(--header-h) + 24px);
   }
 
   /* ======= Card ======= */
@@ -64,21 +129,21 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 28px 32px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .card-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     margin-bottom: 18px;
     padding-bottom: 10px;
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 1.5px solid var(--gold);
     color: var(--text);
   }
 
   /* ======= Form ======= */
   .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 14px;
   }
   .form-grid .full { grid-column: 1 / -1; }
@@ -91,88 +156,148 @@
   }
   .form-group input,
   .form-group select {
-    padding: 10px 12px;
+    padding: 10px 14px;
     border: 1.5px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 1rem;
-    background: #fff;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23878787' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;
     color: var(--text);
     transition: border-color 0.2s;
     outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .form-group select:hover {
+    border-color: var(--gold);
   }
   .form-group input:focus,
   .form-group select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(178,149,93,0.12);
   }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 28px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--gold-dark); }
+  .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .btn-success {
+    background: #27ae60;
+    color: #fff;
+  }
+  .btn-success:hover { background: #219653; }
   .btn-analyze {
     grid-column: 1 / -1;
     padding: 14px;
-    background: var(--accent);
+    background: var(--gold);
     color: #fff;
     border: none;
-    border-radius: 8px;
-    font-size: 1.05rem;
-    font-weight: 600;
+    border-radius: 30px;
+    font-size: 1.02rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
     letter-spacing: 2px;
   }
-  .btn-analyze:hover { background: var(--accent2); }
+  .btn-analyze:hover { background: var(--gold-dark); }
   .btn-analyze:disabled {
-    background: #aaa;
+    background: #ccc;
     cursor: not-allowed;
   }
 
-  /* ======= Bazi Display ======= */
-  .bazi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+  /* ======= Bazi Display (6-row x 5-column table) ======= */
+  .bazi-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
     margin: 16px 0;
   }
-  .bazi-cell {
+  .bazi-row {
+    display: grid;
+    grid-template-columns: 56px repeat(4, 1fr);
+    background: #fff;
     text-align: center;
-    padding: 12px 8px 8px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
   }
-  .bazi-cell .pillar-name {
+  .bazi-row-header {
+    background: #fafafa;
+    border-bottom: 1px solid var(--border);
+  }
+  .bazi-row-last {
+    border-bottom: none;
+  }
+  .bazi-label-header {
+    padding: 8px 4px;
     font-size: 0.78rem;
     color: var(--text2);
-    margin-bottom: 4px;
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+    background: #f5f5f5;
   }
-  .bazi-cell .gan {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1.2;
+  .bazi-label {
+    padding: 6px 4px;
+    font-size: 0.75rem;
+    color: var(--text2);
+    border-right: 1px solid var(--border);
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .bazi-cell .zhi {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-  .bazi-cell .shi-shen {
+  .bazi-cell-header {
+    padding: 8px 4px;
     font-size: 0.82rem;
     color: var(--text2);
-    margin-top: 4px;
+    font-weight: 500;
+    border-right: 1px solid var(--border);
   }
-  .bazi-cell .yy {
-    font-size: 0.75rem;
-    margin-top: 2px;
+  .bazi-cell-header:last-child { border-right: none; }
+  .bazi-cell-char {
+    padding: 10px 4px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    border-right: 1px solid var(--border);
   }
-  .bazi-cell .yy.yang { color: var(--yang); }
-  .bazi-cell .yy.yin { color: var(--yin); }
-  .bazi-cell .yy-label { font-size: 0.7rem; color: var(--text2); }
-  .bazi-cell.day-cell { border-color: var(--accent); background: #fff5f5; }
-  .bazi-cell.day-cell .gan, .bazi-cell.day-cell .zhi { color: var(--accent); }
+  .bazi-cell-char:last-child { border-right: none; }
+  .bazi-cell-char.day-cell {
+    background: var(--gold-light);
+  }
+  .bazi-cell-small {
+    padding: 6px 4px;
+    font-size: 0.78rem;
+    color: var(--text2);
+    border-right: 1px solid var(--border);
+  }
+  .bazi-cell-small:last-child { border-right: none; }
 
   /* ======= Sections ======= */
   .section { margin: 16px 0; }
   .section h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--gold);
     margin-bottom: 8px;
   }
   .section p, .section li { color: var(--text); }
@@ -218,7 +343,7 @@
     font-size: 0.9rem;
   }
   .luck-table th {
-    background: var(--accent);
+    background: var(--gold);
     color: #fff;
     padding: 8px 6px;
     font-weight: 500;
@@ -230,7 +355,7 @@
     border-bottom: 1px solid var(--border);
   }
   .luck-table tr:nth-child(even) { background: #fafafa; }
-  .luck-table .current-luck { background: #fff5f5 !important; font-weight: 600; }
+  .luck-table .current-luck { background: var(--gold-light) !important; font-weight: 600; }
 
   /* ======= Loader ======= */
   .loader {
@@ -242,7 +367,7 @@
   .loader .spinner {
     width: 40px; height: 40px;
     border: 3px solid var(--border);
-    border-top-color: var(--accent);
+    border-top-color: var(--gold);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin: 0 auto 12px;
@@ -254,9 +379,13 @@
   #result { display: none; }
   #result.active { display: block; }
 
+  .btn-back-form {
+    margin-bottom: 16px;
+  }
+
   /* ======= Report ======= */
-  .report-card { border: 2px solid var(--accent); }
-  .report-title { color: var(--accent); font-size: 1.15rem; }
+  .report-card { border: 2px solid var(--gold); }
+  .report-title { color: var(--gold); font-size: 1.15rem; }
   .report-section { margin: 18px 0; }
   .report-section:first-child { margin-top: 0; }
   .report-section-title {
@@ -268,7 +397,7 @@
     margin-bottom: 10px;
   }
   .report-section-title .severity-critical {
-    color: var(--accent);
+    color: var(--gold);
     font-weight: 700;
   }
   .report-content {
@@ -282,8 +411,8 @@
     border-left: 3px solid transparent;
   }
   .report-content p.critical {
-    border-left-color: var(--accent);
-    background: #fff5f5;
+    border-left-color: var(--gold);
+    background: var(--gold-light);
     padding: 6px 10px;
     border-radius: 4px;
   }
@@ -293,14 +422,133 @@
     body { background: #fff; }
     .container { max-width: 100%; padding: 0; }
     .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
-    .report-card { border: 2px solid #c0392b; }
+    .report-card { border: 2px solid var(--gold); }
     header, footer, .disclaimer, .btn-analyze, #deep-btn,
     .report-card div[style*="border-top"] { display: none !important; }
     .bazi-cell { border: 1px solid #999; }
-    .bazi-cell.day-cell { background: #fff5f5; }
-    .tiaohou-quote { border: 1px solid #8b6914; }
+    .bazi-cell.day-cell { background: var(--gold-light); }
+    .tiaohou-quote { border: 1px solid var(--gold); }
     @page { margin: 1.5cm; }
   }
+  /* ======= Payment Modal ======= */
+  .pay-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  }
+  .pay-overlay.active { display: flex; }
+  .pay-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px 28px 24px;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    animation: payPopIn 0.25s ease;
+  }
+  @keyframes payPopIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .pay-modal .price { font-size: 1.8rem; font-weight: 700; color: #b2955d; margin: 8px 0; }
+  .pay-modal .price small { font-size: 0.9rem; font-weight: 400; color: #999; }
+  .pay-modal .qrcode-box {
+    background: #fff;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 14px auto;
+    display: inline-block;
+  }
+  .pay-modal .qrcode-box img { width: 200px; height: 200px; display: block; }
+  .pay-modal .hint { font-size: 0.82rem; color: #999; margin: 8px 0; }
+  .pay-modal .status-msg { font-size: 0.9rem; color: #e67e22; margin: 10px 0; min-height: 1.4em; }
+  .pay-modal .status-msg.done { color: #27ae60; }
+  .pay-modal .btn-close-pay {
+    margin-top: 12px;
+    background: none;
+    border: 1px solid #ddd;
+    color: #999;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .pay-modal .btn-close-pay:hover { background: #f5f5f5; }
+  .pay-modal .pay-loader {
+    display: inline-block;
+    width: 28px; height: 28px;
+    border: 3px solid #eee;
+    border-top-color: #b2955d;
+    border-radius: 50%;
+    animation: paySpin 0.8s linear infinite;
+    margin: 8px auto;
+  }
+  @keyframes paySpin { to { transform: rotate(360deg); } }
+
+
+  /* ======= Toggle Switch ======= */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .toggle-row .toggle-info {
+    font-size: 0.78rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc;
+    border-radius: 24px;
+    transition: 0.3s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--gold);
+  }
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+  .solar-time-result {
+    font-size: 0.82rem;
+    color: var(--gold);
+    margin-top: 4px;
+    min-height: 1.2em;
+  }
+
   .pdf-btn-row { display: none; }
   .pdf-btn-row.active { display: block; }
   .tiaohou-quote {
@@ -329,7 +577,7 @@
   }
   .zg-cell .zg-zhi { font-weight: 600; font-size: 1.1rem; }
   .zg-cell .zg-item { margin: 2px 0; color: var(--text2); }
-  .zg-cell .zg-item .the-god { color: var(--accent); font-weight: 500; }
+  .zg-cell .zg-item .the-god { color: var(--gold); font-weight: 500; }
 
   /* ======= Footer ======= */
   footer {
@@ -370,28 +618,43 @@
 </style>
 </head>
 <body>
-<div class="container">
-  <!-- Header -->
-  <header>
-    <h1>🔮 <span class="accent">八字</span>命理分析</h1>
-    <p>四柱排盘 · 十神 · 藏干 · 旺衰 · 调候 · 大运</p>
-  </header>
+<!-- Top Nav -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">
+      <div class="logo-icon">命</div>
+      <div class="logo-text"><span>Fate</span>Lab</div>
+    </div>
+    <div class="nav-items">
+      <span class="nav-item active">排盘分析</span>
+      <span class="nav-item" onclick="alert('即将上线')">八字知识</span>
+    </div>
+  </div>
+</div>
 
+<div class="container">
   <!-- Form -->
-  <div class="card">
+  <div class="card" id="form-card">
     <div class="card-title">📋 输入出生信息</div>
     <form id="bazi-form" class="form-grid">
-      <div class="form-group">
-        <label>出生年</label>
-        <input type="number" id="year" value="1990" min="1900" max="2100" required>
-      </div>
-      <div class="form-group">
-        <label>出生月</label>
-        <input type="number" id="month" value="6" min="1" max="12" required>
-      </div>
-      <div class="form-group">
-        <label>出生日</label>
-        <input type="number" id="day" value="15" min="1" max="31" required>
+      <!-- Date & Time -->
+      <div class="form-group" style="grid-column: span 2;">
+        <label>出生时间</label>
+        <input type="datetime-local" id="birth-datetime" value="1990-06-15T12:00"
+               style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+                      font-size:0.92rem;color:var(--text);transition:border-color 0.2s;outline:none;
+                      background:#fff;width:100%;font-family:inherit;max-width:260px;" onchange="onBirthTimeChange()">
+        <div class="toggle-row" style="margin-top:8px;">
+          <div>
+            <div style="font-size:0.9rem;">☀️ 真太阳时校正</div>
+            <div class="toggle-info">根据出生地经度自动换算当地时间</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-solar" onchange="onSolarToggle()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="solar-time-result" class="solar-time-result"></div>
       </div>
       <div class="form-group">
         <label>性别</label>
@@ -400,14 +663,27 @@
           <option value="女">女</option>
         </select>
       </div>
+
+      <!-- Place: Province / City / District -->
       <div class="form-group">
-        <label>出生时间（小时）</label>
-        <input type="number" id="hour" value="12" min="0" max="23" required>
+        <label>省份</label>
+        <select id="sel-province" onchange="updateCities()">
+          <option value="">请选择省份</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>分钟</label>
-        <input type="number" id="minute" value="0" min="0" max="59">
+        <label>城市</label>
+        <select id="sel-city" onchange="updateDistricts()">
+          <option value="">请先选择省份</option>
+        </select>
       </div>
+      <div class="form-group">
+        <label>区/县</label>
+        <select id="sel-district">
+          <option value="">请先选择城市</option>
+        </select>
+      </div>
+
       <button type="button" class="btn-analyze" id="submit-btn" onclick="doAnalysis()">开始分析</button>
     </form>
   </div>
@@ -423,34 +699,43 @@
 
   <!-- Result -->
   <div id="result">
+    <!-- 返回按钮 -->
+    <div class="btn-back-form">
+      <button onclick="backToForm()" class="btn" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 16px;font-size:0.85rem;">
+        ← 返回重新输入
+      </button>
+    </div>
     <!-- 命理分析报告（核心） -->
     <div class="card report-card">
       <div class="card-title report-title">📋 命理分析报告</div>
       <div id="report-display"></div>
       <div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:14px;">
-        <button id="deep-btn" onclick="triggerDeepAnalysis()" style="background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:0.92rem;font-weight:500;cursor:pointer;transition:background 0.2s;">
+        <button id="deep-btn" onclick="triggerDeepAnalysis()" class="btn btn-primary" style="font-size:0.92rem;">
           🤖 AI 深度解读
         </button>
         <p style="font-size:0.78rem;color:#999;margin-top:6px;">调用 AI 模型生成更详细的分析（约15秒）</p>
         <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
-          <button onclick="downloadPDF()" style="background:#27ae60;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:0.92rem;font-weight:500;cursor:pointer;">
+          <button onclick="downloadPDF()" class="btn btn-success" style="font-size:0.9rem;">
             📥 下载 PDF
           </button>
+          <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">如移动端无法下载，请在 PC 端浏览器中打开下载</p>
         </div>
       </div>
     </div>
 
-    <!-- 八字 -->
+    <!-- 用户基本信息 -->
+    <div class="card">
+      <div class="card-title">👤 基本信息</div>
+      <div id="user-info-display">
+        <p style="color: var(--text2);">分析完成后显示</p>
+      </div>
+    </div>
+
+    <!-- 八字（含藏干） -->
     <div class="card">
       <div class="card-title">📜 四柱八字</div>
       <div id="bazi-display" class="bazi-grid"></div>
       <div id="bazi-meta"></div>
-    </div>
-
-    <!-- 藏干 -->
-    <div class="card">
-      <div class="card-title">🌿 地支藏干</div>
-      <div id="zanggan-display" class="zg-grid"></div>
     </div>
 
     <!-- 旺衰 -->
@@ -511,13 +796,32 @@ function doAnalysis() {
   resultDiv.classList.remove('active');
   errorArea.innerHTML = '';
 
+  var dt = document.getElementById('birth-datetime').value;
+  if (!dt) { alert('请选择出生时间'); btn.disabled = false; btn.textContent = '开始分析'; return; }
+  var parts = dt.split('T');
+  var dateParts = parts[0].split('-');
+  var timeParts = parts[1].split(':');
+
+  // Use solar-adjusted time if toggle is on
+  var birthHour = parseInt(timeParts[0]);
+  var birthMinute = parseInt(timeParts[1]) || 0;
+  if (_solarAdjusted) {
+    birthHour = _solarAdjusted.hour;
+    birthMinute = _solarAdjusted.minute;
+  }
+
   const data = {
-    year: parseInt(document.getElementById('year').value),
-    month: parseInt(document.getElementById('month').value),
-    day: parseInt(document.getElementById('day').value),
-    hour: parseInt(document.getElementById('hour').value),
-    minute: parseInt(document.getElementById('minute').value) || 0,
+    year: parseInt(dateParts[0]),
+    month: parseInt(dateParts[1]),
+    day: parseInt(dateParts[2]),
+    hour: birthHour,
+    minute: birthMinute,
     gender: document.getElementById('gender').value,
+    birth_place: {
+      province: document.getElementById('sel-province').value,
+      city: document.getElementById('sel-city').value,
+      district: document.getElementById('sel-district').value,
+    },
   };
 
   window._lastBaziData = data;
@@ -533,9 +837,21 @@ function doAnalysis() {
     return res.json();
   })
   .then(function(result) {
+    // Store user input info for display
+    window._userInput = {
+      datetime: document.getElementById('birth-datetime').value,
+      province: document.getElementById('sel-province').value,
+      city: document.getElementById('sel-city').value,
+      district: document.getElementById('sel-district').value,
+      solar_on: document.getElementById('toggle-solar').checked,
+      solar_hour: _solarAdjusted ? _solarAdjusted.hour : null,
+      solar_minute: _solarAdjusted ? _solarAdjusted.minute : null,
+      solar_msg: document.getElementById('solar-time-result').textContent,
+      gender: document.getElementById('gender').value,
+    };
     // Show data cards only (no AI report yet)
+    renderUserInfo();
     renderBazi(result.bazi, result);
-    renderZanggan(result.zanggan);
     renderWangshuai(result.wangshuai);
     renderTiaohou(result.tiaohou, result.qiongtong_text, result.tiyao_entry);
     renderGeju(result.geju);
@@ -544,6 +860,7 @@ function doAnalysis() {
     document.getElementById('report-display').innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">点击下方 "AI 深度解读" 按钮生成完整分析报告。</p>';
     document.getElementById('pdf-btn-row').classList.remove('active');
     resultDiv.classList.add('active');
+    document.getElementById('form-card').style.display = 'none';
   })
   .catch(function(err) {
     errorArea.innerHTML = '<div class="error-msg">❌ ' + err.message + '</div>';
@@ -560,27 +877,8 @@ function triggerDeepAnalysis() {
   const reportContainer = document.getElementById('report-display');
   if (!window._lastBaziData) return;
 
-  // Check if already analyzed with same birth data
-  if (window._lastDeepResult && window._lastDeepResult.birth_date) {
-    var expected = window._lastBaziData;
-    var cached = window._lastDeepResult;
-    var match = cached.birth_date.indexOf(expected.year) >= 0 &&
-                cached.birth_date.indexOf(String(expected.month)) >= 0 &&
-                cached.birth_date.indexOf(String(expected.day)) >= 0;
-    if (match) {
-      renderReport(cached.report);
-      deepBtn.textContent = '✅ 已经完成AI深度解读';
-      deepBtn.style.background = '#27ae60';
-      document.getElementById('pdf-btn-row').classList.add('active');
-      return;
-    }
-  }
-
-  deepBtn.disabled = true;
-  deepBtn.textContent = 'AI 深度解读中...';
-  reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">AI 正在分析命局，请稍候...</p></div>';
-
-  fetch('/api/analyze/deep', {
+  // Step 1: Create payment order (or reuse existing)
+  fetch('/api/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(window._lastBaziData),
@@ -589,22 +887,117 @@ function triggerDeepAnalysis() {
     if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail); }); }
     return res.json();
   })
-  .then(function(result) {
-    renderReport(result.report);
-    window._lastDeepResult = result;
-    if (result._from_cache) {
-      deepBtn.textContent = '✅ 已从缓存加载（相同八字无需重复分析）';
-    } else {
-      deepBtn.textContent = '✅ AI 深度解读完成';
+  .then(function(data) {
+    if (data.is_reuse) {
+      // Already paid before — load cached report
+      deepBtn.textContent = '✅ 已购，加载报告中...';
+      reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">正在加载已购报告...</p></div>';
+      fetchOrderReport(data.order_id);
+      return;
     }
-    deepBtn.style.background = '#27ae60';
-    document.getElementById('pdf-btn-row').classList.add('active');
+    // Show QR code payment modal
+    showPayModal(data.order_id, data.qrcode, data.total_fee);
   })
   .catch(function(err) {
-    reportContainer.innerHTML = '<div class="error-msg">❌ AI 深度分析失败：' + err.message + '</div>';
-    deepBtn.textContent = '🔄 重试 AI 深度解读';
+    reportContainer.innerHTML = '<div class="error-msg">❌ 创建订单失败：' + err.message + '</div>';
+    deepBtn.textContent = '🤖 AI 深度解读';
     deepBtn.disabled = false;
   });
+}
+
+/* ─── Payment Modal ─── */
+
+var _pollTimer = null;
+
+function showPayModal(orderId, qrcode, totalFee) {
+  var price = (totalFee / 100).toFixed(1);
+  document.getElementById('pay-price-display').textContent = price;
+  document.getElementById('pay-qrcode-img').src = qrcode;
+  document.getElementById('pay-order-id-display').textContent = orderId;
+  document.getElementById('pay-status-msg').textContent = '⏳ 等待支付...';
+  document.getElementById('pay-status-msg').className = 'status-msg';
+  document.getElementById('pay-loader').style.display = 'none';
+  document.getElementById('pay-overlay').classList.add('active');
+
+  // Start polling
+  _pollTimer = setInterval(function() {
+    pollOrderStatus(orderId);
+  }, 2000);
+  // Also poll immediately
+  setTimeout(function() { pollOrderStatus(orderId); }, 500);
+}
+
+function closePayModal() {
+  document.getElementById('pay-overlay').classList.remove('active');
+  if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+  // Reset button state
+  var deepBtn = document.getElementById('deep-btn');
+  deepBtn.textContent = '🤖 AI 深度解读';
+  deepBtn.disabled = false;
+}
+
+function pollOrderStatus(orderId) {
+  fetch('/api/orders/' + orderId + '/status')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var msg = document.getElementById('pay-status-msg');
+      var loader = document.getElementById('pay-loader');
+
+      if (data.status === 'paid') {
+        if (data.report) {
+          // Report ready! Close modal and show
+          closePayModal();
+          renderReport(data.report);
+          window._lastDeepResult = data.report;
+          var deepBtn = document.getElementById('deep-btn');
+          deepBtn.textContent = '✅ AI 深度解读完成';
+          deepBtn.style.background = '#27ae60';
+          deepBtn.disabled = false;
+          document.getElementById('pdf-btn-row').classList.add('active');
+          if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+        } else {
+          // Paid but report still generating
+          msg.textContent = '✅ 支付成功！AI 正在生成报告...';
+          msg.className = 'status-msg done';
+          loader.style.display = 'block';
+          // Keep polling (now every 3s)
+          if (_pollTimer) { clearInterval(_pollTimer); }
+          _pollTimer = setInterval(function() { pollOrderStatus(orderId); }, 3000);
+        }
+      } else if (data.status === 'failed') {
+        msg.textContent = '❌ 分析失败，请联系客服';
+        msg.className = 'status-msg';
+        loader.style.display = 'none';
+        if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+      }
+      // 'pending' — keep waiting, timer handles it
+    })
+    .catch(function(err) {
+      console.error('Poll error:', err);
+    });
+}
+
+function fetchOrderReport(orderId) {
+  // Fetch existing cached report
+  fetch('/api/orders/' + orderId + '/status')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.report) {
+        renderReport(data.report);
+        window._lastDeepResult = data.report;
+        var deepBtn = document.getElementById('deep-btn');
+        deepBtn.textContent = '✅ 已购，报告已加载';
+        deepBtn.style.background = '#27ae60';
+        deepBtn.disabled = false;
+        document.getElementById('pdf-btn-row').classList.add('active');
+      } else {
+        document.getElementById('report-display').innerHTML =
+          '<div class="error-msg">❌ 报告未找到，请重新分析</div>';
+        var deepBtn = document.getElementById('deep-btn');
+        deepBtn.textContent = '🤖 AI 深度解读';
+        deepBtn.disabled = false;
+      }
+    });
 }
 
 function renderResult(r) {
@@ -639,50 +1032,172 @@ function renderReport(report) {
   container.innerHTML = html;
 }
 
+
+function backToForm() {
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('form-card').style.display = '';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = '开始分析';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderUserInfo() {
+  var ui = window._userInput;
+  if (!ui) return;
+  var container = document.getElementById('user-info-display');
+  var dt = ui.datetime.replace('T', ' ');
+
+  // Build place string
+  var place = [];
+  if (ui.province) place.push(ui.province);
+  if (ui.city) place.push(ui.city);
+  if (ui.district) place.push(ui.district);
+  var placeStr = place.length ? place.join(' · ') : '未填写';
+
+  var html = '<table class="info-table" style="margin-bottom:0;">';
+
+  if (ui.solar_on && ui.solar_hour !== null) {
+    // Solar time: use date from original + solar-adjusted time
+    var datePart = ui.datetime.split('T')[0];
+    var solarTime = String(ui.solar_hour).padStart(2,'0') + ':' + String(ui.solar_minute).padStart(2,'0');
+    html += '<tr><td>出生时间（真太阳时）</td><td style="color:var(--gold);font-weight:600;">' + datePart + ' ' + solarTime + '</td></tr>';
+    html += '<tr><td>北京时间</td><td style="color:var(--text2);">' + dt + '</td></tr>';
+  } else {
+    html += '<tr><td>出生时间</td><td>' + dt + '</td></tr>';
+  }
+
+  html += '<tr><td>性别</td><td>' + ui.gender + '</td></tr>';
+  html += '<tr><td>出生地</td><td>' + placeStr + '</td></tr>';
+  html += '</table>';
+  container.innerHTML = html;
+}
+
 function renderBazi(bazi, metaData) {
   var container = document.getElementById('bazi-display');
   var meta = document.getElementById('bazi-meta');
   var order = ['year', 'month', 'day', 'hour'];
-  var names = { year: '年柱', month: '月柱', day: '日柱', hour: '时柱' };
-  var labels = { year: '祖上', month: '父母/事业', day: '自身/婚姻', hour: '子女/晚年' };
-  var html = '';
+  var names = { year: '年柱', month: '月柱', day: '日主', hour: '时柱' };
+
+  // 天干五行色
+  var ganColor = {
+    '甲':'#07e930','乙':'#07e930',
+    '丙':'#d30505','丁':'#d30505',
+    '戊':'#8b6d03','己':'#8b6d03',
+    '庚':'#ef9104','辛':'#ef9104',
+    '壬':'#2e83f6','癸':'#2e83f6'
+  };
+  // 地支五行色: 寅卯木, 巳午火, 申酉金, 亥子水, 辰戌丑未土
+  var zhiColor = {
+    '寅':'#07e930','卯':'#07e930',
+    '巳':'#d30505','午':'#d30505',
+    '申':'#ef9104','酉':'#ef9104',
+    '亥':'#2e83f6','子':'#2e83f6',
+    '辰':'#8b6d03','戌':'#8b6d03','丑':'#8b6d03','未':'#8b6d03'
+  };
+
+  // Row labels
+  var labels = ['', '天干', '地支', '藏干', '纳音', '神煞'];
+
+  // Build rows as arrays, then combine with labels
+  var rows = [];
+  for (var r = 0; r < 6; r++) rows[r] = '';
+
   for (var k = 0; k < order.length; k++) {
     var key = order[k];
     var p = bazi[key];
     var isDay = key === 'day';
-    html += '<div class="bazi-cell' + (isDay ? ' day-cell' : '') + '">';
-    html += '<div class="pillar-name">' + names[key] + '</div>';
-    html += '<div class="gan">' + p.gan + '</div>';
-    html += '<div class="zhi">' + p.zhi + '</div>';
-    html += '<div class="shi-shen">' + p.shi_shen + '</div>';
-    html += '<div class="yy ' + (p.yin_yang === '阳' ? 'yang' : 'yin') + '">' + (p.yin_yang === '阳' ? '♂ 阳' : '♀ 阴') + '</div>';
-    html += '<div class="yy-label">' + labels[key] + '</div>';
+    var cellExtra = isDay ? ' class="day-cell"' : '';
+
+    // Row 0: headers
+    var headerStyle = isDay ? ' style="color:var(--gold);font-weight:700;"' : '';
+    rows[0] += '<div class="bazi-cell-header"' + headerStyle + '>' + names[key] + '</div>';
+
+    // Row 1: 天干
+    var gc = ganColor[p.gan] || '#101010';
+    rows[1] += '<div class="bazi-cell-char"' + cellExtra + ' style="color:' + gc + ';">' + p.gan + '</div>';
+
+    // Row 2: 地支
+    var zc = zhiColor[p.zhi] || '#101010';
+    rows[2] += '<div class="bazi-cell-char"' + cellExtra + ' style="color:' + zc + ';">' + p.zhi + '</div>';
+
+    // Row 3: 地支藏干
+    var cgHtml = '';
+    if (metaData && metaData.zanggan && metaData.zanggan[key]) {
+      var z = metaData.zanggan[key];
+      if (z.zanggan && z.zanggan.length > 0) {
+        for (var g = 0; g < z.zanggan.length; g++) {
+          var cc = ganColor[z.zanggan[g].gan_char] || 'var(--text2)';
+          cgHtml += '<span style="color:' + cc + ';">' + z.zanggan[g].gan_char + '</span>';
+          if (g < z.zanggan.length - 1) cgHtml += ' ';
+        }
+      }
+    }
+    rows[3] += '<div class="bazi-cell-small">' + (cgHtml || '-') + '</div>';
+
+    // Row 4: 纳音
+    var ny = p.nayin || '-';
+    rows[4] += '<div class="bazi-cell-small" style="color:#999;">' + ny + '</div>';
+
+    // Row 5: 神煞
+    rows[5] += '<div class="bazi-cell-small" style="color:var(--text2);">-</div>';
+  }
+
+  // Compose table with left labels
+  var html = '<div class="bazi-table">';
+  for (var r = 0; r < 6; r++) {
+    var cls = r === 0 ? ' bazi-row-header' : '';
+    cls += r === 5 ? ' bazi-row-last' : '';
+    html += '<div class="bazi-row' + cls + '">';
+    // Left label cell
+    var labelCls = r === 0 ? 'bazi-label-header' : 'bazi-label';
+    html += '<div class="' + labelCls + '">' + labels[r] + '</div>';
+    // Four pillar cells
+    html += rows[r];
     html += '</div>';
   }
+  html += '</div>';
+
   container.innerHTML = html;
-  meta.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;margin-top:8px;text-align:center;">出生：' + metaData.birth_date + ' · ' + metaData.gender + '</p>';
+
+  // Birth info
+  var birthInfo = '出生：' + metaData.birth_date + ' · ' + metaData.gender;
+  meta.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;margin-top:8px;text-align:center;">' + birthInfo + '</p>';
 }
 
-function renderZanggan(zanggan) {
+function renderZangganCompact(zanggan) {
+  if (!zanggan) return;
   var container = document.getElementById('zanggan-display');
+  if (!container) return;
   var order = ['year', 'month', 'day', 'hour'];
   var names = { year: '年', month: '月', day: '日', hour: '时' };
-  var html = '';
+  var elemColor = {
+    '甲':'#07e930','乙':'#07e930',
+    '丙':'#d30505','丁':'#d30505',
+    '戊':'#8b6d03','己':'#8b6d03',
+    '庚':'#ef9104','辛':'#ef9104',
+    '壬':'#2e83f6','癸':'#2e83f6'
+  };
+
+  var html = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;">🌿 地支藏干</div>';
+  html += '<div class="zg-grid">';
   for (var k = 0; k < order.length; k++) {
     var key = order[k];
     var z = zanggan[key];
-    var items = '';
-    if (z.zanggan && z.zanggan.length > 0) {
-      for (var g = 0; g < z.zanggan.length; g++) {
-        items += '<div class="zg-item">' + z.zanggan[g].gan_char + ' <span class="the-god">' + z.zanggan[g].shi_shen + '</span></div>';
-      }
-    }
     html += '<div class="zg-cell">';
     html += '<div class="zg-zhi">' + z.zhi_char + '</div>';
-    html += '<div style="font-size:0.72rem;color:var(--text2);margin-bottom:4px;">' + names[key] + '支</div>';
-    html += items;
+    html += '<div style="font-size:0.7rem;color:var(--text2);margin-bottom:4px;">' + names[key] + '支</div>';
+    if (z.zanggan && z.zanggan.length > 0) {
+      for (var g = 0; g < z.zanggan.length; g++) {
+        var gc = elemColor[z.zanggan[g].gan_char] || 'var(--text2)';
+        html += '<div class="zg-item">';
+        html += '<span style="color:' + gc + ';font-weight:600;">' + z.zanggan[g].gan_char + '</span>';
+        html += ' <span class="the-god">' + z.zanggan[g].shi_shen + '</span>';
+        html += '</div>';
+      }
+    }
     html += '</div>';
   }
+  html += '</div>';
   container.innerHTML = html;
 }
 
@@ -716,7 +1231,7 @@ function renderTiaohou(tiaohou, qiongtongText, tiyaoEntry) {
     html += '<p style="color:var(--text2);">穷通宝鉴暂无此组合的调候记录。</p>';
   }
   if (tiyaoEntry) {
-    html += '<p style="margin-top:10px;font-size:0.85rem;color:#8b6914;font-weight:500;">《八字提要》</p>';
+    html += '<p style="margin-top:10px;font-size:0.85rem;color:#b2955d;font-weight:500;">《八字提要》</p>';
     html += '<div style="font-size:0.88rem;line-height:1.8;color:var(--text2);">' + tiyaoEntry + '</div>';
   }
   container.innerHTML = html;
@@ -782,28 +1297,28 @@ function downloadPDF() {
   for (var i = 0; i < 4; i++) {
     var k = order[i];
     var pc = r.bazi[k];
-    var bc = k === 'day' ? ' style="border-color:#c0392b;background:#fff5f5;"' : '';
+    var bc = k === 'day' ? ' style="border-color:#b2955d;background:#f7f4ee;"' : '';
     h += '<span style="display:inline-block;padding:8px 14px;border:1px solid #ddd;margin:0 3px;border-radius:4px;font-size:18pt;"' + bc + '>' + pc.gan + pc.zhi + '</span>';
   }
   h += '</div>';
 
   for (var i = 0; i < r.report.sections.length; i++) {
     var sec = r.report.sections[i];
-    h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
+    h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
     for (var j = 0; j < sec.content.length; j++) {
       h += '<p style="margin:6px 0;text-indent:2em;">' + sec.content[j] + '</p>';
     }
   }
 
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">十神分布</h2>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">天干</th><th style="background:#c0392b;color:white;padding:5px 6px;">十神</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">阴阳</th></tr>';
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">十神分布</h2>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">柱</th><th style="background:#b2955d;color:white;padding:5px 6px;">天干</th><th style="background:#b2955d;color:white;padding:5px 6px;">十神</th><th style="background:#b2955d;color:white;padding:5px 6px;">地支</th><th style="background:#b2955d;color:white;padding:5px 6px;">阴阳</th></tr>';
   for (var i = 0; i < 4; i++) { var p = r.bazi[order[i]];
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.gan + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.shi_shen + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.zhi + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + p.yin_yang + '</td></tr>';
   }
   h += '</table>';
 
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">地支藏干</h2>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">柱</th><th style="background:#c0392b;color:white;padding:5px 6px;">地支</th><th style="background:#c0392b;color:white;padding:5px 6px;">藏干（十神）</th></tr>';
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">地支藏干</h2>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">柱</th><th style="background:#b2955d;color:white;padding:5px 6px;">地支</th><th style="background:#b2955d;color:white;padding:5px 6px;">藏干（十神）</th></tr>';
   for (var i = 0; i < 4; i++) { var z = r.zanggan[order[i]]; var items = '';
     if (z.zanggan) { for (var k = 0; k < z.zanggan.length; k++) { items += (k > 0 ? '、' : '') + z.zanggan[k].gan_char + '(' + z.zanggan[k].shi_shen + ')'; } }
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + nameMap[order[i]] + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + z.zhi_char + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + items + '</td></tr>';
@@ -811,15 +1326,15 @@ function downloadPDF() {
   h += '</table>';
 
   if (r.qiongtong_text) {
-    h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">调候用神 — 穷通宝鉴</h2>';
-    h += '<div style="background:#fef9ef;border-left:4px solid #8b6914;padding:10px 14px;margin:10px 0;font-size:10pt;">' + r.qiongtong_text.substring(0, 300) + '……</div>';
+    h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">调候用神 — 穷通宝鉴</h2>';
+    h += '<div style="background:#f7f4ee;border-left:4px solid #b2955d;padding:10px 14px;margin:10px 0;font-size:10pt;">' + r.qiongtong_text.substring(0, 300) + '……</div>';
   }
 
   var startText = r.dayun.starting_years + '岁';
   if (r.dayun.starting_months > 0) startText += r.dayun.starting_months + '个月';
-  h += '<h2 style="font-size:14pt;border-bottom:2px solid #c0392b;padding-bottom:4px;color:#c0392b;margin-top:16px;">大运</h2>';
+  h += '<h2 style="font-size:14pt;border-bottom:2px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:16px;">大运走势</h2>';
   h += '<p style="margin:6px 0;">起运：<strong>' + startText + '</strong> · 排法：' + (r.dayun.forward ? '顺排' : '逆排') + '</p>';
-  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#c0392b;color:white;padding:5px 6px;">大运</th><th style="background:#c0392b;color:white;padding:5px 6px;">干支</th><th style="background:#c0392b;color:white;padding:5px 6px;">五行</th><th style="background:#c0392b;color:white;padding:5px 6px;">年龄</th></tr>';
+  h += '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt;"><tr><th style="background:#b2955d;color:white;padding:5px 6px;">大运</th><th style="background:#b2955d;color:white;padding:5px 6px;">干支</th><th style="background:#b2955d;color:white;padding:5px 6px;">五行</th><th style="background:#b2955d;color:white;padding:5px 6px;">年龄</th></tr>';
   for (var i = 0; i < r.dayun.luck_cycles.length; i++) { var c = r.dayun.luck_cycles[i];
     h += '<tr><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (i+1) + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;"><strong>' + c.gan_char + c.zhi_char + '</strong></td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + (elemMap[c.gan_char]||'') + '</td><td style="border:1px solid #ccc;padding:4px 6px;text-align:center;">' + c.age_range + '</td></tr>';
   }
@@ -911,6 +1426,133 @@ function renderDayun(dayun) {
   container.innerHTML = html;
 }
 
+/* ─── 真太阳时 ─── */
+var _solarAdjusted = null;  // { hour, minute } when toggle is on
+
+function onBirthTimeChange() {
+  // When user changes datetime, recalculate if solar toggle is on
+  if (document.getElementById('toggle-solar').checked) {
+    calcSolarTime();
+  } else {
+    document.getElementById('solar-time-result').textContent = '';
+  }
+}
+
+function onSolarToggle() {
+  if (document.getElementById('toggle-solar').checked) {
+    calcSolarTime();
+  } else {
+    _solarAdjusted = null;
+    document.getElementById('solar-time-result').textContent = '';
+  }
+}
+
+function calcSolarTime() {
+  var dt = document.getElementById('birth-datetime').value;
+  if (!dt) return;
+  var parts = dt.split('T');
+  var dp = parts[0].split('-');
+  var tp = parts[1].split(':');
+  var prov = document.getElementById('sel-province').value;
+  var city = document.getElementById('sel-city').value;
+  if (!city) {
+    document.getElementById('solar-time-result').textContent = '⚠️ 请先选择出生地（省份和城市）';
+    _solarAdjusted = null;
+    return;
+  }
+
+  var url = '/api/calc-solar-time?year=' + dp[0] + '&month=' + dp[1] + '&day=' + dp[2]
+          + '&hour=' + tp[0] + '&minute=' + (tp[1] || '0')
+          + '&province=' + encodeURIComponent(prov)
+          + '&city=' + encodeURIComponent(city);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      _solarAdjusted = { hour: data.solar_hour, minute: data.solar_minute };
+      var lngStr = data.lng >= 0 ? '东经' + data.lng.toFixed(1) + '°' : '西经' + Math.abs(data.lng).toFixed(1) + '°';
+      var msg = '☀️ 真太阳时：' + String(data.solar_hour).padStart(2,'0') + ':' + String(data.solar_minute).padStart(2,'0')
+              + '（' + data.solar_shichen + '） — '
+              + lngStr + '，经度校正 ' + data.lng_correction_minutes + '分';
+      if (data.equation_of_time_minutes !== 0) {
+        msg += '，均时差 ' + data.equation_of_time_minutes + '分';
+      }
+      document.getElementById('solar-time-result').textContent = msg;
+    })
+    .catch(function() {
+      document.getElementById('solar-time-result').textContent = '⚠️ 真太阳时计算失败';
+      _solarAdjusted = null;
+    });
+}
+
+/* ─── 省市区三级联动 ─── */
+var _regionsData = null;
+
+function loadRegions() {
+  fetch('/api/regions')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      _regionsData = data;
+      var sel = document.getElementById('sel-province');
+      sel.innerHTML = '<option value="">请选择省份</option>';
+      var provinces = Object.keys(data).sort();
+      for (var i = 0; i < provinces.length; i++) {
+        sel.innerHTML += '<option value="' + provinces[i] + '">' + provinces[i] + '</option>';
+      }
+    });
+}
+
+function updateCities() {
+  var prov = document.getElementById('sel-province').value;
+  var citySel = document.getElementById('sel-city');
+  var distSel = document.getElementById('sel-district');
+  citySel.innerHTML = '<option value="">请先选择省份</option>';
+  distSel.innerHTML = '<option value="">请先选择城市</option>';
+  if (!prov || !_regionsData || !_regionsData[prov]) return;
+  citySel.innerHTML = '<option value="">请选择城市</option>';
+  var cities = Object.keys(_regionsData[prov]).sort();
+  for (var i = 0; i < cities.length; i++) {
+    citySel.innerHTML += '<option value="' + cities[i] + '">' + cities[i] + '</option>';
+  }
+  // Recalculate solar time if toggle is on
+  if (document.getElementById('toggle-solar').checked) {
+    calcSolarTime();
+  }
+}
+
+function updateDistricts() {
+  var prov = document.getElementById('sel-province').value;
+  var city = document.getElementById('sel-city').value;
+  var distSel = document.getElementById('sel-district');
+  distSel.innerHTML = '<option value="">请先选择城市</option>';
+  if (!prov || !city || !_regionsData || !_regionsData[prov] || !_regionsData[prov][city]) return;
+  distSel.innerHTML = '<option value="">请选择区/县</option>';
+  var dists = _regionsData[prov][city];
+  for (var i = 0; i < dists.length; i++) {
+    distSel.innerHTML += '<option value="' + dists[i] + '">' + dists[i] + '</option>';
+  }
+}
+
+// Load regions on page load
+loadRegions();
+
 </script>
+
+<!-- Payment Modal -->
+<div id="pay-overlay" class="pay-overlay" onclick="if(event.target===this)closePayModal()">
+  <div class="pay-modal">
+    <div style="font-size:0.9rem;color:#999;margin-bottom:2px;">八字AI深度解读</div>
+    <div class="price"><span id="pay-price-display">19.9</span> <small>元</small></div>
+    <div class="qrcode-box">
+      <img id="pay-qrcode-img" src="" alt="微信扫码支付">
+    </div>
+    <div class="hint">请使用微信扫描二维码完成支付</div>
+    <div id="pay-status-msg" class="status-msg">⏳ 等待支付...</div>
+    <div id="pay-loader" class="pay-loader" style="display:none;"></div>
+    <div style="font-size:0.72rem;color:#ccc;margin-top:6px;">订单号：<span id="pay-order-id-display">--</span></div>
+    <button class="btn-close-pay" onclick="closePayModal()">关闭</button>
+  </div>
+</div>
+
 </body>
 </html>

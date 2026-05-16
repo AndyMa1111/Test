@@ -6,3 +6,5 @@ auth.json
 .Hermes/
 .hermes/
 node_modules/
+config/payjs.json
+config/xorpay.json

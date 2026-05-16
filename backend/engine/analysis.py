@@ -66,6 +66,28 @@ def get_wangxiang(element_idx: int, month_zhi: int) -> str:
     return WANG_XIANG_NAMES[status_idx]
 
 
+
+# 纳音表 (60甲子)
+NAYIN_MAP = {}
+_nayin_data = [
+    ("甲子","乙丑","海中金"),("丙寅","丁卯","炉中火"),("戊辰","己巳","大林木"),
+    ("庚午","辛未","路旁土"),("壬申","癸酉","剑锋金"),("甲戌","乙亥","山头火"),
+    ("丙子","丁丑","涧下水"),("戊寅","己卯","城头土"),("庚辰","辛巳","白蜡金"),
+    ("壬午","癸未","杨柳木"),("甲申","乙酉","泉中水"),("丙戌","丁亥","屋上土"),
+    ("戊子","己丑","霹雳火"),("庚寅","辛卯","松柏木"),("壬辰","癸巳","长流水"),
+    ("甲午","乙未","沙中金"),("丙申","丁酉","山下火"),("戊戌","己亥","平地木"),
+    ("庚子","辛丑","壁上土"),("壬寅","癸卯","金箔金"),("甲辰","乙巳","覆灯火"),
+    ("丙午","丁未","天河水"),("戊申","己酉","大驿土"),("庚戌","辛亥","钗钏金"),
+    ("壬子","癸丑","桑柘木"),("甲寅","乙卯","大溪水"),("丙辰","丁巳","沙中土"),
+    ("戊午","己未","天上火"),("庚申","辛酉","石榴木"),("壬戌","癸亥","大海水"),
+]
+for g1, g2, n in _nayin_data:
+    NAYIN_MAP[g1] = n
+    NAYIN_MAP[g2] = n
+
+def get_nayin(gan: str, zhi: str) -> str:
+    """Get 纳音 for a 干支 pair."""
+    return NAYIN_MAP.get(gan + zhi, "")
 def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 0,
                       gender: str = '男', calendar: str = '公历') -> dict:
     """
@@ -189,24 +211,28 @@ def analyze_full_bazi(year: int, month: int, day: int, hour: int, minute: int = 
                 'zhi': pillars['year']['zhi_char'],
                 'shi_shen': shi_shen_result['year']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['year']['gan'] % 2],
+                'nayin': get_nayin(pillars['year']['gan_char'], pillars['year']['zhi_char']),
             },
             'month': {
                 'gan': pillars['month']['gan_char'],
                 'zhi': pillars['month']['zhi_char'],
                 'shi_shen': shi_shen_result['month']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['month']['gan'] % 2],
+                'nayin': get_nayin(pillars['month']['gan_char'], pillars['month']['zhi_char']),
             },
             'day': {
                 'gan': pillars['day']['gan_char'],
                 'zhi': pillars['day']['zhi_char'],
                 'shi_shen': '日主',
                 'yin_yang': ['阳', '阴'][pillars['day']['gan'] % 2],
+                'nayin': get_nayin(pillars['day']['gan_char'], pillars['day']['zhi_char']),
             },
             'hour': {
                 'gan': pillars['hour']['gan_char'],
                 'zhi': pillars['hour']['zhi_char'],
                 'shi_shen': shi_shen_result['hour']['gan_shi_shen'],
                 'yin_yang': ['阳', '阴'][pillars['hour']['gan'] % 2],
+                'nayin': get_nayin(pillars['hour']['gan_char'], pillars['hour']['zhi_char']),
             },
         },
         'zanggan': zanggan_analysis,
