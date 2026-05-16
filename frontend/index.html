@@ -1304,12 +1304,15 @@ function renderReport(report) {
       var g = gj[gi];
       html += '<div style="margin:4px 0;line-height:1.7;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
       html += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
+      var hasBazi = g.in_bazi && g.in_bazi.length > 0;
       if (g.is_effective) {
-        html += ' → <span style="color:#070;font-weight:600;">✓ 有效：';
-        html += (g.in_bazi && g.in_bazi.length > 0) ? g.in_bazi.join('、') : '月令藏气中有' + g.controller;
+        html += ' → <span style="color:#070;font-weight:600;">✓ 有效制衡';
+        if (hasBazi) html += '（天干：' + g.in_bazi.join('、') + '）';
         html += '</span>';
       } else {
-        html += ' → <span style="color:#c00;">✗ ' + g.controller + '处于' + g.controller_status + '地，力量不足</span>';
+        html += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地，力量不足';
+        if (hasBazi) html += '（但天干有' + g.in_bazi.join('、') + '，需大运引动）';
+        html += '</span>';
       }
       html += '</div>';
     }
@@ -1691,27 +1694,21 @@ function downloadPDF() {
         var g = gj[gi];
         h += '<div style="margin:4px 0;"><span style="color:#b2955d;font-weight:600;">格局喜神：</span>';
         h += '旺气【' + g.strong_element + '】需【' + g.controller + '】来制衡';
+        var hasBazi = g.in_bazi && g.in_bazi.length > 0;
         if (g.is_effective) {
-          h += ' → <span style="color:#070;font-weight:600;">✓ 有效：';
-          h += (g.in_bazi && g.in_bazi.length > 0) ? g.in_bazi.join('、') : '月令藏气中有' + g.controller;
+          h += ' → <span style="color:#070;font-weight:600;">✓ 有效制衡';
+          if (hasBazi) h += '（天干：' + g.in_bazi.join('、') + '）';
           h += '</span>';
         } else {
-          h += ' → <span style="color:#c00;">✗ ' + g.controller + '处于' + g.controller_status + '地，力量不足</span>';
+          h += ' → <span style="color:#c00;">✗ ' + g.controller + '在' + g.controller_status + '地，力量不足';
+          if (hasBazi) h += '（但天干有' + g.in_bazi.join('、') + '，需大运引动）';
+          h += '</span>';
         }
         h += '</div>';
       }
     }
 
     h += '</div>';
-  }
-
-  // --- AI Report Sections ---
-  for (var i = 0; i < r.report.sections.length; i++) {
-    var sec = r.report.sections[i];
-    h += '<h2 style="font-size:13pt;border-bottom:1.5px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:14px;margin-bottom:6px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
-    for (var j = 0; j < sec.content.length; j++) {
-      h += '<p style="margin:4px 0;text-indent:2em;">' + sec.content[j] + '</p>';
-    }
   }
 
   // --- 大运流年 ---
@@ -1729,6 +1726,15 @@ function downloadPDF() {
     h += '<td style="border:1px solid #ddd;padding:3px 4px;text-align:center;">' + c.age_range + '</td></tr>';
   }
   h += '</table>';
+
+  // --- AI Report Sections ---
+  for (var i = 0; i < r.report.sections.length; i++) {
+    var sec = r.report.sections[i];
+    h += '<h2 style="font-size:13pt;border-bottom:1.5px solid #b2955d;padding-bottom:4px;color:#b2955d;margin-top:14px;margin-bottom:6px;">' + sec.title.replace(/### /g, '').trim() + '</h2>';
+    for (var j = 0; j < sec.content.length; j++) {
+      h += '<p style="margin:4px 0;text-indent:2em;">' + sec.content[j] + '</p>';
+    }
+  }
 
   h += '<div style="text-align:center;font-size:7.5pt;color:#aaa;margin-top:20px;border-top:1px solid #ddd;padding-top:6px;">本报告由 FateLab 八字命理分析系统 AI 深度解读生成</div></div>';
 

@@ -231,15 +231,17 @@ def generate_pdf(result: dict) -> str:
             pdf.cell(pdf.get_string_width("格局喜神：") + 2, 6, "格局喜神：", ln=False)
             pdf.set_font("zh", "", 9)
             txt = f"旺气【{g['strong_element']}】需【{g['controller']}】来制衡"
+            has_bazi = bool(g.get("in_bazi") and len(g["in_bazi"]) > 0)
             if g.get("is_effective"):
                 pdf.set_text_color(0, 119, 0)
-                if g.get("in_bazi") and len(g["in_bazi"]) > 0:
-                    txt += "  ✓ 有效：" + "、".join(g["in_bazi"])
-                else:
-                    txt += f"  ✓ 月令藏气中有{g['controller']}"
+                txt += "  ✓ 有效制衡"
+                if has_bazi:
+                    txt += "（天干：" + "、".join(g["in_bazi"]) + "）"
             else:
                 pdf.set_text_color(204, 0, 0)
-                txt += f"  ✗ {g['controller']}处于{g['controller_status']}地，力量不足"
+                txt += f"  ✗ {g['controller']}在{g['controller_status']}地，力量不足"
+                if has_bazi:
+                    txt += "（但天干有" + "、".join(g["in_bazi"]) + "，需大运引动）"
             pdf.multi_cell(182, 6, txt, new_x="LMARGIN", new_y="NEXT")
             _space_for(pdf, 10)
 
@@ -249,26 +251,6 @@ def generate_pdf(result: dict) -> str:
         pdf.set_draw_color(*GOLD)
         pdf.rect(x0, y0, 190, y1 - y0, style="D")
         pdf.ln(4)
-
-    # ----- AI Report Sections -----
-    report = result.get("report", {})
-    sections = report.get("sections", [])
-    for idx, s in enumerate(sections):
-        title = s.get("title", "").replace("### ", "").strip()
-        _space_for(pdf, 25, title if idx > 0 else "")
-
-        pdf.set_font("zh", "B", 12)
-        pdf.set_text_color(*GOLD)
-        pdf.cell(0, 9, title, ln=True)
-        pdf.set_text_color(*DARK)
-        pdf.set_font("zh", "", 10)
-
-        for line in s.get("content", []):
-            clean = line.strip()
-            if clean:
-                _space_for(pdf, 10)
-                pdf.multi_cell(0, 6.5, clean, new_x="LMARGIN", new_y="NEXT")
-        pdf.ln(2)
 
     # ----- 大运 -----
     dayun = result.get("dayun", {})
@@ -285,8 +267,6 @@ def generate_pdf(result: dict) -> str:
     pdf.cell(0, 6, f"起运：{start_text} · 排法：{'顺排' if dayun.get('forward') else '逆排'}", ln=True)
     pdf.ln(1)
 
-    elem_map = {"甲": "木", "乙": "木", "丙": "火", "丁": "火",
-                "戊": "土", "己": "土", "庚": "金", "辛": "金", "壬": "水", "癸": "水"}
     dy_rows = []
     for i, c in enumerate(dayun.get("luck_cycles", [])):
         gc = c['gan_char']
@@ -315,6 +295,26 @@ def generate_pdf(result: dict) -> str:
                     pdf.set_font("zh", "", 9)
                 pdf.cell(dw, 7, str(val), border=1, align="C")
             pdf.ln()
+
+    # ----- AI Report Sections -----
+    report = result.get("report", {})
+    sections = report.get("sections", [])
+    for idx, s in enumerate(sections):
+        title = s.get("title", "").replace("### ", "").strip()
+        _space_for(pdf, 25, title if idx > 0 else "")
+
+        pdf.set_font("zh", "B", 12)
+        pdf.set_text_color(*GOLD)
+        pdf.cell(0, 9, title, ln=True)
+        pdf.set_text_color(*DARK)
+        pdf.set_font("zh", "", 10)
+
+        for line in s.get("content", []):
+            clean = line.strip()
+            if clean:
+                _space_for(pdf, 10)
+                pdf.multi_cell(0, 6.5, clean, new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(2)
 
     # Footer
     _space_for(pdf, 15)

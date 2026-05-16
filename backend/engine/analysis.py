@@ -694,7 +694,7 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
             'controller': controller,
             'controller_status': controller_wx,
             'is_effective': is_effective,
-            'in_bazi': matching_gans + matching_zhi,
+            'in_bazi': matching_gans,  # 只在天干中寻找喜神
             'has_month_hidden': month_got,
         })
     
