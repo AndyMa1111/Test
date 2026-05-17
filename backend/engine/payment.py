@@ -159,28 +159,22 @@ def create_native_order(
 def check_order(platform_order_id: str) -> dict:
     """
     Query XorPay for order payment status.
-    Returns normalized dict where 'status'=1 means paid.
+    Uses GET https://xorpay.com/api/query/{aoid} — no sign required.
+
+    Return values:
+      "status": 1 if paid, 0 if not
+      "xpay_status": raw XorPay status (payed/success/new/expire/not_exist)
     """
-    cfg = _load_config()
-    # Check order API: https://xorpay.com/doc/query.html
-    # Uses MD5(order_id + app_secret) as sign
-    raw = platform_order_id + cfg["key"]
-    sign = hashlib.md5(raw.encode("utf-8")).hexdigest().lower()
-
-    params = {
-        "order_id": platform_order_id,
-        "sign": sign,
-    }
-
-    resp = requests.post("https://xorpay.com/api/check", data=params, timeout=10)
+    url = f"https://xorpay.com/api/query/{platform_order_id}"
+    resp = requests.get(url, timeout=10)
     result = resp.json()
 
-    # Normalize
-    # status=ok means the order exists; pay_result=1 means paid
-    status_str = result.get("status", "")
-    is_paid = result.get("pay_result") == 1 if status_str == "ok" else False
+    status_str = result.get("status", "not_exist")
+    # payed = paid but callback pending; success = paid + callback done
+    is_paid = status_str in ("payed", "success")
+
     return {
         "status": 1 if is_paid else 0,
-        "order_id": result.get("aoid", ""),
-        "out_trade_no": result.get("order_id", ""),
+        "xpay_status": status_str,
+        "aoid": platform_order_id,
     }
