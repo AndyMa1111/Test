@@ -78,6 +78,7 @@ def create_native_order(
     total_fee: int,
     out_trade_no: str,
     body: str = "八字AI深度解读",
+    notify_url: str = None,
 ) -> dict:
     """
     Create a XorPay Native (scan-to-pay) order.
@@ -99,17 +100,20 @@ def create_native_order(
 
     cfg = _load_config()
     aid = cfg["pay_id"]
-    price_yuan = f"{total_fee / 100:.2f}"  # Convert cents to yuan
+    price_yuan = f"{total_fee / 100:.2f}"
     pay_type = "native"
 
-    sign = _sign(body, pay_type, price_yuan, out_trade_no, cfg["notify_url"])
+    # Use provided notify_url, or fall back to config
+    cb_url = notify_url or cfg["notify_url"]
+
+    sign = _sign(body, pay_type, price_yuan, out_trade_no, cb_url)
 
     params = {
         "pay_type": pay_type,
         "name": body,
         "order_id": out_trade_no,
         "price": price_yuan,
-        "notify_url": cfg["notify_url"],
+        "notify_url": cb_url,
         "sign": sign,
     }
 

@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -371,7 +371,7 @@ def _run_deep_analysis(order_id: str, birth_data: dict):
 
 
 @app.post("/api/orders", response_model=PayOrderResponse)
-async def create_pay_order(data: BirthData):
+async def create_pay_order(data: BirthData, request: Request = None):
     """
     Create a payment order for AI deep analysis.
     Returns order_id + QR code image (base64).
@@ -405,7 +405,13 @@ async def create_pay_order(data: BirthData):
         order = create_order(birth_dict)
         order_id = order["order_id"]
 
-        # Call PayJS to get QR code
+        # Build dynamic notify_url from request
+        notify_url = None
+        if request:
+            base = str(request.base_url).rstrip("/")
+            notify_url = f"{base}/api/pay_notify"
+
+        # Call XorPay to get QR code
         from backend.engine.payment import create_native_order
         from backend.engine.orders import update_payjs_info
 
@@ -413,6 +419,7 @@ async def create_pay_order(data: BirthData):
             total_fee=order["total_fee"],
             out_trade_no=order_id,
             body="八字AI深度解读",
+            notify_url=notify_url,
         )
 
         if payjs_resp.get("return_code") != 1:
@@ -500,19 +507,16 @@ async def get_order_status(order_id: str):
     if status["status"] == "pending":
         order = get_order(order_id)
         if order and order.get("payjs_order_id"):
-            try:
-                check_res = xorpay_check(order["payjs_order_id"])
-                if check_res.get("status") == 1:
-                    # Payment confirmed by XorPay! Mark as paid
-                    import json as _json
-                    mark_paid(order_id, _json.dumps(check_res, ensure_ascii=False))
-                    # Trigger deep analysis in background
-                    birth_data = _json.loads(order["birth_data"])
-                    _run_deep_analysis(order_id, birth_data)
-                    # Re-fetch status
-                    status = get_status(order_id)
-            except Exception:
-                pass  # Silent failure - polling will retry
+            check_res = xorpay_check(order["payjs_order_id"])
+            if check_res.get("status") == 1:
+                # Payment confirmed by XorPay! Mark as paid
+                import json as _json
+                mark_paid(order_id, _json.dumps(check_res, ensure_ascii=False))
+                # Trigger deep analysis in background
+                birth_data = _json.loads(order["birth_data"])
+                _run_deep_analysis(order_id, birth_data)
+                # Re-fetch status
+                status = get_status(order_id)
 
     return OrderStatusResponse(
         order_id=status["order_id"],
