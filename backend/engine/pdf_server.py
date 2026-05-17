@@ -22,17 +22,8 @@ GRAY_LIGHT = (250, 250, 250)
 
 
 def _space_for(pdf, needed_mm: float, section_title: str = ""):
-    """Check if there's enough vertical space left on the page.
-    If not, add a page break. If a section title is provided, repeat it after the break."""
-    remaining = pdf.h - pdf.b_margin - pdf.get_y()
-    if remaining < needed_mm:
-        pdf.add_page()
-        if section_title:
-            pdf.set_font("zh", "B", 12)
-            pdf.set_text_color(*GOLD)
-            pdf.cell(0, 10, section_title + "（续）", ln=True)
-            pdf.set_text_color(*DARK)
-            pdf.set_font("zh", "", 10)
+    """REMOVED: No forced page breaks. Content flows naturally."""
+    pass
 
 
 def generate_pdf(result: dict) -> str:

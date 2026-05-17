@@ -414,6 +414,19 @@ async def create_pay_order(data: BirthData, request: Request = None):
         order = create_order(birth_dict)
         order_id = order["order_id"]
 
+        # DEBUG: bypass payment (set BYPASS_PAYMENT=true env var on Render or locally)
+        if os.environ.get("BYPASS_PAYMENT") == "true":
+            from backend.engine.orders import mark_paid as _mp
+            _mp(order_id, '{"debug": true, "bypass": true}')
+            birth_copy = dict(birth_dict)
+            _run_deep_analysis(order_id, birth_copy)
+            return PayOrderResponse(
+                order_id=order_id,
+                total_fee=0,
+                qrcode="",
+                is_reuse=True,
+            )
+
         # Build dynamic notify_url from request
         notify_url = None
         if request:
