@@ -485,14 +485,34 @@ async def get_order_status(order_id: str):
     """
     Get order payment status.
     If paid and report is ready, returns the full report.
+    Also proactively checks XorPay when pending, in case async callback was lost.
     """
-    from backend.engine.orders import get_order_status as get_status
+    from backend.engine.orders import get_order_status as get_status, get_order, mark_paid
+    from backend.engine.payment import check_order as xorpay_check
 
     status = get_status(order_id)
     fee = status.get("total_fee", 0)
 
     if status["status"] == "not_found":
         return OrderStatusResponse(order_id=order_id, status="not_found", total_fee=fee)
+
+    # Proactive check: if still pending, query XorPay directly
+    if status["status"] == "pending":
+        order = get_order(order_id)
+        if order and order.get("payjs_order_id"):
+            try:
+                check_res = xorpay_check(order["payjs_order_id"])
+                if check_res.get("status") == 1:
+                    # Payment confirmed by XorPay! Mark as paid
+                    import json as _json
+                    mark_paid(order_id, _json.dumps(check_res, ensure_ascii=False))
+                    # Trigger deep analysis in background
+                    birth_data = _json.loads(order["birth_data"])
+                    _run_deep_analysis(order_id, birth_data)
+                    # Re-fetch status
+                    status = get_status(order_id)
+            except Exception:
+                pass  # Silent failure - polling will retry
 
     return OrderStatusResponse(
         order_id=status["order_id"],

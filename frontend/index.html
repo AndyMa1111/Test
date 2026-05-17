@@ -1221,13 +1221,41 @@ function triggerDeepAnalysis() {
   if (!window._lastBaziData) return;
 
   deepBtn.disabled = true;
-  deepBtn.textContent = 'AI 分析中...';
-  reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">AI 正在分析命局，请稍候...</p></div>';
+  deepBtn.textContent = '创建订单...';
+  reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">正在创建支付订单...</p></div>';
 
-  fetch('/api/analyze/deep', {
+  // Step 1: Create payment order
+  fetch('/api/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(window._lastBaziData),
+  })
+  .then(function(res) {
+    if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail || '下单失败'); }); }
+    return res.json();
+  })
+  .then(function(order) {
+    if (order.is_reuse) {
+      // Already paid before, show report directly
+      deepBtn.textContent = 'AI 分析中...';
+      return callDeepAnalysis(deepBtn, reportContainer, order.order_id);
+    }
+    // Show payment QR code modal
+    showPayModal(order.order_id, order.qrcode, order.total_fee);
+    deepBtn.textContent = '📱 扫码支付中...';
+  })
+  .catch(function(err) {
+    reportContainer.innerHTML = '<div class="error-msg">❌ ' + err.message + '</div>';
+    deepBtn.textContent = '🤖 AI 深度解读';
+    deepBtn.disabled = false;
+  });
+}
+
+function callDeepAnalysis(deepBtn, reportContainer, orderId) {
+  return fetch('/api/analyze/deep', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({order_id: orderId, ...window._lastBaziData}),
   })
   .then(function(res) {
     if (!res.ok) { return res.json().then(function(e) { throw new Error(e.detail || '分析失败'); }); }
@@ -1290,7 +1318,7 @@ function pollOrderStatus(orderId) {
         if (data.report) {
           // Report ready! Close modal and show
           closePayModal();
-          renderReport(data.report);
+          renderReport(data.report.report);
           window._lastDeepResult = data.report;
           var deepBtn = document.getElementById('deep-btn');
           deepBtn.textContent = '✅ AI 深度解读完成';
