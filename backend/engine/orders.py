@@ -101,12 +101,12 @@ def get_order_by_payjs(payjs_order_id: str) -> dict | None:
 
 
 def get_paid_order_for_birth(birth_data: dict) -> dict | None:
-    """Check if the exact same birth data already has a paid, completed report."""
+    """Check if the exact same birth data already has a paid order (report ready or generating)."""
     key = json.dumps(birth_data, ensure_ascii=False, sort_keys=True)
     conn = _get_conn()
     row = conn.execute(
         """SELECT * FROM orders
-           WHERE birth_data=? AND status='paid' AND report_ready=1
+           WHERE birth_data=? AND status='paid'
            ORDER BY id DESC LIMIT 1""",
         (key,),
     ).fetchone()

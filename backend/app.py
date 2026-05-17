@@ -400,6 +400,15 @@ async def create_pay_order(data: BirthData, request: Request = None):
                 qrcode="",
                 is_reuse=True,
             )
+        if existing:
+            # Paid but report still generating — return order_id
+            # Frontend will poll /api/orders/{order_id}/status until report ready
+            return PayOrderResponse(
+                order_id=existing["order_id"],
+                total_fee=0,
+                qrcode="",
+                is_reuse=True,
+            )
 
         # Create order in DB
         order = create_order(birth_dict)

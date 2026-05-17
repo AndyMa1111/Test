@@ -1236,9 +1236,11 @@ function triggerDeepAnalysis() {
   })
   .then(function(order) {
     if (order.is_reuse) {
-      // Already paid before, show report directly
+      // Already paid before — poll for report
       deepBtn.textContent = 'AI 分析中...';
-      return callDeepAnalysis(deepBtn, reportContainer, order.order_id);
+      reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><div class="pay-loader" style="display:block;margin:0 auto 12px;"></div><p style="color:#888;">报告生成中，请稍候...</p></div>';
+      pollOrderForReport(order.order_id, deepBtn, reportContainer);
+      return;
     }
     // Show payment QR code modal
     showPayModal(order.order_id, order.qrcode, order.total_fee);
@@ -1315,9 +1317,10 @@ function pollOrderStatus(orderId) {
       var loader = document.getElementById('pay-loader');
 
       if (data.status === 'paid') {
+        // Close modal immediately — payment confirmed
+        closePayModal();
         if (data.report) {
-          // Report ready! Close modal and show
-          closePayModal();
+          // Report already ready
           renderReport(data.report.report);
           window._lastDeepResult = data.report;
           var deepBtn = document.getElementById('deep-btn');
@@ -1327,11 +1330,9 @@ function pollOrderStatus(orderId) {
           document.getElementById('pdf-btn-row').classList.add('active');
           if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
         } else {
-          // Paid but report still generating
-          msg.textContent = '✅ 支付成功！AI 正在生成报告...';
-          msg.className = 'status-msg done';
-          loader.style.display = 'block';
-          // Keep polling (now every 3s)
+          // Paid but report still generating — poll in main area
+          var reportContainer = document.getElementById('report-display');
+          reportContainer.innerHTML = '<div style="text-align:center;padding:20px;"><div class="pay-loader" style="display:block;margin:0 auto 12px;"></div><p style="color:#888;">AI 正在生成报告，请稍候...</p></div>';
           if (_pollTimer) { clearInterval(_pollTimer); }
           _pollTimer = setInterval(function() { pollOrderStatus(orderId); }, 3000);
         }
@@ -1345,6 +1346,30 @@ function pollOrderStatus(orderId) {
     })
     .catch(function(err) {
       console.error('Poll error:', err);
+    });
+}
+
+function pollOrderForReport(orderId, deepBtn, reportContainer) {
+  fetch('/api/orders/' + orderId + '/status')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.report) {
+        // Report ready!
+        renderReport(data.report.report);
+        window._lastDeepResult = data.report;
+        deepBtn.textContent = '✅ AI 深度解读完成';
+        deepBtn.style.background = '#27ae60';
+        deepBtn.disabled = false;
+        document.getElementById('pdf-btn-row').classList.add('active');
+      } else {
+        // Still generating — retry after 3s
+        setTimeout(function() { pollOrderForReport(orderId, deepBtn, reportContainer); }, 3000);
+      }
+    })
+    .catch(function(err) {
+      reportContainer.innerHTML = '<div class="error-msg">❌ ' + err.message + '</div>';
+      deepBtn.textContent = '🤖 AI 深度解读';
+      deepBtn.disabled = false;
     });
 }
 
