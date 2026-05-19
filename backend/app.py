@@ -22,7 +22,7 @@ init_db()
 app = FastAPI(
     title="八字命理分析 API",
     description="自动排盘、十神、大运、调候、旺衰综合分析",
-    version="1.0.0",
+    version="3.2.0",
 )
 
 # Register WeChat PDF endpoint
@@ -68,7 +68,7 @@ async def root():
 
 @app.get("/health", response_model=HealthCheck)
 async def health_check():
-    return HealthCheck(status="ok", version="1.0.0")
+    return HealthCheck(status="ok", version="3.2.0")
 
 
 @app.post("/api/analyze")

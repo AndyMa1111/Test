@@ -561,40 +561,335 @@ def generate_report(result: dict, pillars: dict, day_gan: int, month_zhi: int) -
     
     sections.append(geju_section)
     
-    # ===== 4. 日主分析（是否需要扶抑） =====
-    rizhu_section = {
-        'title': '三、日主分析',
+    # ===== 4. 日主性格分析 =====
+    # 十天干本性
+    TIAN_GAN_CHARACTER = {
+        '甲': '甲木为参天大树，正直仁厚、有担当，性格刚直不阿，有领导气质，但不喜受人压制。',
+        '乙': '乙木为藤萝花草，柔韧善变、适应力强，外表温和内心坚韧，善于周旋协调。',
+        '丙': '丙火为太阳之火，热情开朗、慷慨大方，感染力强，但容易急躁冲动，缺乏耐性。',
+        '丁': '丁火为灯烛之火，细腻温和、心思缜密，有内在的光和热，情感丰富但容易内耗。',
+        '戊': '戊土为高岗厚土，稳重诚信、包容大度，行事沉稳可靠，但有时过于固执保守。',
+        '己': '己土为田园沃土，谦逊包容、善于滋养，心思细腻、善于规划，但容易犹豫不决。',
+        '庚': '庚金为刀剑之金，刚毅果断、义字当头，有魄力和执行力，但有时过于刚硬。',
+        '辛': '辛金为珠玉之金，精致优雅、追求完美，思维敏锐、善于细节，但容易敏感挑剔。',
+        '壬': '壬水为江河之水，智慧变通、大气磅礴，视野开阔、善于谋略，但不喜受约束。',
+        '癸': '癸水为雨露之水，聪慧内敛、以柔克刚，直觉敏锐、富有灵性，但容易情绪化。',
+    }
+    # 十神性格影响
+    SHI_SHEN_CHARACTER = {
+        '正官': '正官旺者，原则性强、负责任、守规矩，但容易过于拘谨。',
+        '七杀': '七杀旺者，有魄力、敢闯敢拼、不畏挑战，但容易冲动激进。',
+        '正印': '正印旺者，仁慈稳重、好学习、有文化修养，但依赖性强。',
+        '偏印': '偏印旺者，思维独特、有创意、善于逆向思考，但孤僻不合群。',
+        '正财': '正财旺者，务实稳重、理财有道、注重实际，但格局偏小。',
+        '偏财': '偏财旺者，慷慨大方、善于交际、有商业头脑，但大手大脚。',
+        '伤官': '伤官旺者，聪明才艺出众、口才好、有艺术天赋，但心高气傲、口无遮拦。',
+        '食神': '食神旺者，温和善良、有口福、懂生活享受，但容易安于现状。',
+        '比肩': '比肩旺者，独立自主、自尊心强、有竞争意识，但固执己见。',
+        '劫财': '劫财旺者，讲义气、朋友多、行动力强，但容易因朋友破财。',
+    }
+    
+    xingge_section = {
+        'title': '三、日主性格分析',
         'content': [],
     }
     
-    # Get day stem's element and its status
-    day_elem_status = wangshuai.get(day_element, '')
-    rizhu_section['content'].append(
-        f'日主为{day_gan_char}（{day_element}），在{month_name}月处于"{day_elem_status}"的状态。'
-    )
+    # 1. 日干本性
+    base_char = TIAN_GAN_CHARACTER.get(day_gan_char, '')
+    if base_char:
+        xingge_section['content'].append(f'【日干本性】日主为{day_gan_char}。{base_char}')
     
-    # Check if day master needs balancing
-    if day_elem_status in ['旺', '相']:
-        rizhu_section['content'].append(
-            f'日主{day_element}当令较旺，但是否需要扶抑取决于八字整体格局——'
-            f'如果格局旺气需要日主来平衡，则身旺是好事；如果格局已经自平衡，则不必强求日主强弱。'
-        )
-    elif day_elem_status == '休':
-        rizhu_section['content'].append(
-            f'日主处于休地，力量有所不足。但若格局旺气不需要日主参与平衡，'
-            f'则日主强弱不作为主要判断依据。'
-        )
-    elif day_elem_status in ['囚', '死']:
-        rizhu_section['content'].append(
-            f'日主处于囚/死地，在原局力量较弱。但如果八字格局旺气另有平衡之道，'
-            f'日主弱也不影响富贵。'
+    # 2. 十神组合影响 — 统计各柱天干的十神出现频率
+    shi_shen_counts = {}
+    for pk in ['year', 'month', 'hour']:
+        ss = bazi[pk]['shi_shen']
+        shi_shen_counts[ss] = shi_shen_counts.get(ss, 0) + 1
+    
+    # 藏干也统计
+    for pk in ['year', 'month', 'day', 'hour']:
+        zg = result['zanggan'].get(pk, {}).get('zanggan', [])
+        for item in zg:
+            ss = item.get('shi_shen', '')
+            if ss:
+                shi_shen_counts[ss] = shi_shen_counts.get(ss, 0) + 0.5  # 藏干权重减半
+    
+    dominant_ss = sorted(shi_shen_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+    dominant_ss = [(name, count) for name, count in dominant_ss if count >= 1.0]
+    
+    if dominant_ss:
+        descs = []
+        for name, count in dominant_ss:
+            char_desc = SHI_SHEN_CHARACTER.get(name, '')
+            if char_desc:
+                descs.append(f'{name}（{int(count)}处）→ {char_desc}')
+        xingge_section['content'].append('【十神特征】' + '；'.join(descs))
+    
+    # 3. 五行体质影响
+    elem_influence = []
+    if strongest_elements:
+        elem_influence.append(f'八字中【{",".join(strongest_elements)}】当令最旺')
+    if second_elements:
+        elem_influence.append(f'【{",".join(second_elements)}】次旺')
+    
+    elem_char = {
+        '木': '木主仁，性格正直温和、有上进心',
+        '火': '火主礼，性格热情开朗、积极向上',
+        '土': '土主信，性格稳重踏实、诚信可靠',
+        '金': '金主义，性格果敢决断、讲求原则',
+        '水': '水主智，性格聪明变通、善于思考',
+    }
+    elem_desc_parts = []
+    for e in strongest_elements + second_elements:
+        d = elem_char.get(e, '')
+        if d:
+            elem_desc_parts.append(f'{e}{d}')
+    
+    if elem_influence:
+        xingge_section['content'].append('【五行气质】' + '，'.join(elem_influence) + '。')
+    if elem_desc_parts:
+        xingge_section['content'].append('受旺气影响：' + '；'.join(elem_desc_parts) + '。')
+    
+    # 调候对性格的影响
+    if is_wood_in_summer or is_metal_in_winter:
+        if not effective_gods:
+            xingge_section['content'].append(
+                '命局偏寒/偏热但缺少有效调候，性格上容易走向极端或内在压力较大。'
+            )
+    
+    # 4. 性格总结
+    sections.append(xingge_section)
+    
+    # ===== 5. 婚姻分析 =====
+    gender = result.get('gender', '男')
+    
+    # 地支关系映射
+    LIUHE = {'子丑', '寅亥', '卯戌', '辰酉', '巳申', '午未'}
+    SANHE_MAP = {
+        '申': {'子', '辰'}, '子': {'申', '辰'}, '辰': {'申', '子'},
+        '寅': {'午', '戌'}, '午': {'寅', '戌'}, '戌': {'寅', '午'},
+        '巳': {'酉', '丑'}, '酉': {'巳', '丑'}, '丑': {'巳', '酉'},
+        '亥': {'卯', '未'}, '卯': {'亥', '未'}, '未': {'亥', '卯'},
+    }
+    CHONG = {'子午', '午子', '卯酉', '酉卯', '寅申', '申寅', '巳亥', '亥巳', '辰戌', '戌辰', '丑未', '未丑'}
+    HAI = {'子未', '未子', '丑午', '午丑', '寅巳', '巳寅', '卯辰', '辰卯', '申亥', '亥申', '酉戌', '戌酉'}
+    XING = {'丑戌', '戌丑', '丑未', '未丑', '戌未', '未戌', '寅巳', '巳寅', '巳申', '申巳', '寅申', '申寅'}
+    BANHE = {
+        ('寅', '午'): '寅午半合火局', ('午', '戌'): '午戌半合火局', ('寅', '戌'): '寅戌半合火局',
+        ('巳', '酉'): '巳酉半合金局', ('酉', '丑'): '酉丑半合金局', ('巳', '丑'): '巳丑半合金局',
+        ('申', '子'): '申子半合水局', ('子', '辰'): '子辰半合水局', ('申', '辰'): '申辰半合水局',
+        ('亥', '卯'): '亥卯半合木局', ('卯', '未'): '卯未半合木局', ('亥', '未'): '亥未半合木局',
+    }
+    
+    def get_relation(z1, z2):
+        pair = z1 + z2
+        pair_rev = z2 + z1
+        if pair in LIUHE or pair_rev in LIUHE:
+            return f'{z1}{z2}六合'
+        if pair in CHONG or pair_rev in CHONG:
+            return f'{z1}{z2}相冲'
+        if pair in HAI or pair_rev in HAI:
+            return f'{z1}{z2}相害'
+        if pair in XING or pair_rev in XING:
+            return f'{z1}{z2}相刑'
+        if (z1, z2) in BANHE:
+            return BANHE[(z1, z2)]
+        if (z2, z1) in BANHE:
+            return BANHE[(z2, z1)]
+        return None
+    
+    hunyin_section = {
+        'title': '四、婚姻分析',
+        'content': [],
+    }
+    
+    day_zhi_char = bazi['day']['zhi']
+    month_zhi_char = bazi['month']['zhi']
+    year_zhi_char = bazi['year']['zhi']
+    hour_zhi_char = bazi['hour']['zhi']
+    
+    # 1. 夫妻宫分析（日支与月、时、年的关系）
+    rels = []
+    for other_name, other_zhi in [('月', month_zhi_char), ('时', hour_zhi_char), ('年', year_zhi_char)]:
+        rel = get_relation(day_zhi_char, other_zhi)
+        if rel:
+            rels.append(f'日支{day_zhi_char}与{other_name}支{other_zhi}：{rel}')
+    
+    if rels:
+        hunyin_section['content'].append(f'【夫妻宫（日支{day_zhi_char}）】' + '；'.join(rels) + '。')
+    
+    # 日支合多判断
+    he_count = 0
+    for other_zhi in [month_zhi_char, hour_zhi_char, year_zhi_char]:
+        pair1, pair2 = day_zhi_char + other_zhi, other_zhi + day_zhi_char
+        if pair1 in LIUHE or pair2 in LIUHE or (day_zhi_char, other_zhi) in BANHE or (other_zhi, day_zhi_char) in BANHE:
+            he_count += 1
+    if he_count >= 2:
+        hunyin_section['content'].append(
+            f'日支{day_zhi_char}与多柱相合，心思易被外界事务牵动，感情上容易分心。'
         )
     
-    sections.append(rizhu_section)
+    # 2. 夫妻星分析
+    # 五行元素: 0=木, 1=火, 2=土, 3=金, 4=水
+    # 天干: 甲乙(0),丙丁(1),戊己(2),庚辛(3),壬癸(4)
+    # `克我` 关系: 木→金→火→水→土→木 (逆五行)
+    # 我克: 木克土, 火克金, 土克水, 金克木, 水克火 (顺五行)
+    my_element = day_gan // 2
+    # 克我 element = (my_element + 3) % 5
+    ke_wo_elem = (my_element + 3) % 5
+    yang_ke_wo = ke_wo_elem * 2       # 克我之阳干
+    yin_ke_wo = ke_wo_elem * 2 + 1    # 克我之阴干
+    # 我克 element = (my_element + 2) % 5
+    wo_ke_elem = (my_element + 2) % 5
+    yang_wo_ke = wo_ke_elem * 2       # 我克之阳干
+    yin_wo_ke = wo_ke_elem * 2 + 1    # 我克之阴干
+    gan_yinyang = day_gan % 2  # 0=阳, 1=阴
     
-    # ===== 5. 综合分析 =====
+    if gender == '女':
+        # 女命：正官=克我异性，七杀=克我同性
+        if gan_yinyang == 0:  # 阳干，阳被阴克=正官，阳被阳克=七杀
+            zheng_guan = TIAN_GAN[yin_ke_wo]
+            qi_sha = TIAN_GAN[yang_ke_wo]
+        else:  # 阴干，阴被阳克=正官，阴被阴克=七杀
+            zheng_guan = TIAN_GAN[yang_ke_wo]
+            qi_sha = TIAN_GAN[yin_ke_wo]
+        
+        # 查找夫妻星（天干，排除日主自己）
+        fu_stars = []
+        for pk in ['year', 'month', 'hour']:
+            gan_char = bazi[pk]['gan']
+            if gan_char == zheng_guan:
+                fu_stars.append(f'正官{gan_char}（{pk}柱天干）')
+            elif gan_char == qi_sha:
+                fu_stars.append(f'七杀{gan_char}（{pk}柱天干）')
+        
+        # 查找夫妻星（地支藏干）
+        fu_stars_cang = []
+        for pk in ['year', 'month', 'day', 'hour']:
+            zg = result['zanggan'].get(pk, {}).get('zanggan', [])
+            zhi_char = result['zanggan'].get(pk, {}).get('zhi_char', '')
+            for idx, item in enumerate(zg):
+                gan_c = item['gan_char']
+                if gan_c == zheng_guan or gan_c == qi_sha:
+                    label = '正官' if gan_c == zheng_guan else '七杀'
+                    pos_info = f'{pk}支{zhi_char}'
+                    if idx == 0:
+                        pos_info += '（本气）'
+                    fu_stars_cang.append(f'{label}{gan_c}（{pos_info}）')
+        
+        if fu_stars:
+            hunyin_section['content'].append(f'【夫妻星】夫妻星透出天干：{"、".join(fu_stars)}。')
+        else:
+            hunyin_section['content'].append('【夫妻星】夫妻星（正官/七杀）在天干均未透出。')
+        
+        if fu_stars_cang:
+            hunyin_section['content'].append(f'地支中藏夫妻星：{"、".join(fu_stars_cang)}。')
+        else:
+            hunyin_section['content'].append('原局地支中也不见夫妻星，异性缘分较浅，需大运流年引动。')
+        
+        # 是否缺夫妻星综合判断
+        has_fu_in_gan = len(fu_stars) > 0
+        has_fu_in_benqi = False
+        for pk in ['year', 'month', 'day', 'hour']:
+            zg = result['zanggan'].get(pk, {}).get('zanggan', [])
+            zhi_char = result['zanggan'].get(pk, {}).get('zhi_char', '')
+            if zg and zg[0]['gan_char'] in [zheng_guan, qi_sha]:
+                has_fu_in_benqi = True
+                break
+        has_fu_in_cang = len(fu_stars_cang) > 0
+        
+        if not has_fu_in_gan and not has_fu_in_cang:
+            hunyin_section['content'].append('⚠️ 原局天干地支均无夫妻星，属于较难成婚的命局。')
+        
+        # 好日柱检查（24个女命好日柱）
+        good_day_female = {'庚午', '丙子', '辛巳', '丁亥', '戊寅', '己卯', '癸未', '甲申', '乙酉', '壬辰', '癸丑', '壬戌'}
+        day_pillar = bazi['day']['gan'] + bazi['day']['zhi']
+        if day_pillar in good_day_female:
+            # 检查夫妻星是否在夫妻宫本气
+            day_zg = result['zanggan'].get('day', {}).get('zanggan', [])
+            if day_zg and day_zg[0]['gan_char'] in [zheng_guan, qi_sha]:
+                hunyin_section['content'].append(
+                    f'✅ {day_pillar}日柱为佳配，夫妻星（{day_zg[0]["gan_char"]}）在夫妻宫本气，配偶自身条件好。'
+                )
+        
+        # 官杀混杂检查
+        has_zg_in_gan = zheng_guan in [bazi[pk]['gan'] for pk in ['year', 'month', 'hour']]
+        has_qs_in_gan = qi_sha in [bazi[pk]['gan'] for pk in ['year', 'month', 'hour']]
+        has_zg_in_zhi = any(zheng_guan in [item['gan_char'] for item in result['zanggan'].get(pk, {}).get('zanggan', [])] for pk in ['year', 'month', 'day', 'hour'])
+        has_qs_in_zhi = any(qi_sha in [item['gan_char'] for item in result['zanggan'].get(pk, {}).get('zanggan', [])] for pk in ['year', 'month', 'day', 'hour'])
+        
+        if has_zg_in_gan and has_qs_in_gan:
+            hunyin_section['content'].append('⚠️ 天干官杀混杂（正官七杀同时透出），异性缘分复杂，感情选择需谨慎。')
+        elif not has_zg_in_gan and has_zg_in_zhi and has_qs_in_zhi:
+            hunyin_section['content'].append('天干无官杀混杂，但地支中正官七杀并存，暗藏偏缘，需注意中年后的感情波动。')
+        
+        # 女命出轨判断：日干之"禄"在日支或时支，且与任一其他地支合
+        # 禄: 甲寅乙卯、丙午丁巳、戊巳己午、庚申辛酉、壬亥癸子
+        LU_MAP = {'甲': '寅', '乙': '卯', '丙': '午', '丁': '巳', '戊': '巳', '己': '午', '庚': '申', '辛': '酉', '壬': '亥', '癸': '子'}
+        lu_zhi = LU_MAP.get(day_gan_char, '')
+        if lu_zhi:
+            lu_in_rizhi = (lu_zhi == day_zhi_char)
+            lu_in_shizhi = (lu_zhi == hour_zhi_char)
+            if lu_in_rizhi or lu_in_shizhi:
+                lu_pos = '日支' if lu_in_rizhi else '时支'
+                # 检查该禄与任一其他地支有合
+                other_zhi_list = []
+                for ok, ov in [('年', year_zhi_char), ('月', month_zhi_char), ('时', hour_zhi_char), ('日', day_zhi_char)]:
+                    if ov == lu_zhi:
+                        continue
+                    other_zhi_list.append((ok, ov))
+                he_found = []
+                for ok, ov in other_zhi_list:
+                    pair1 = lu_zhi + ov
+                    pair2 = ov + lu_zhi
+                    if pair1 in LIUHE or pair2 in LIUHE:
+                        he_found.append(f'{ok}支{ov}六合')
+                    elif (lu_zhi, ov) in BANHE:
+                        he_found.append(f'{ok}支{ov}{BANHE[(lu_zhi, ov)]}')
+                    elif (ov, lu_zhi) in BANHE:
+                        he_found.append(f'{ok}支{ov}{BANHE[(ov, lu_zhi)]}')
+                if he_found:
+                    hunyin_section['content'].append(
+                        f'⚠️ 女命身体出轨判断：日干{day_gan_char}之禄在{lu_pos}{lu_zhi}，'
+                        f'该禄与{"、".join(he_found)}，符合判断条件。'
+                    )
+    
+    else:  # 男命
+        # 男命：正财=我克异性，偏财=我克同性
+        if gan_yinyang == 0:  # 阳干，阳克阴=正财，阳克阳=偏财
+            zheng_cai = TIAN_GAN[yin_wo_ke]
+            pian_cai = TIAN_GAN[yang_wo_ke]
+        else:  # 阴干，阴克阳=正财，阴克阴=偏财
+            zheng_cai = TIAN_GAN[yang_wo_ke]
+            pian_cai = TIAN_GAN[yin_wo_ke]
+        
+        cai_stars = []
+        for pk in ['year', 'month', 'day', 'hour']:
+            gan_char = bazi[pk]['gan']
+            if gan_char == zheng_cai:
+                cai_stars.append(f'正财{gan_char}（{pk}柱天干）')
+            elif gan_char == pian_cai:
+                cai_stars.append(f'偏财{gan_char}（{pk}柱天干）')
+        
+        if cai_stars:
+            hunyin_section['content'].append(f'【夫妻星】夫妻星透出天干：{"、".join(cai_stars)}。')
+        else:
+            hunyin_section['content'].append('【夫妻星】夫妻星（正财/偏财）在天干均未透出。')
+        
+        # 好日柱检查（24个男命好日柱）
+        good_day_male = {'戊子', '己亥', '壬午', '癸巳', '甲戌', '甲辰', '乙丑', '乙未', '丙申', '丁酉', '庚寅', '辛卯'}
+        day_pillar = bazi['day']['gan'] + bazi['day']['zhi']
+        if day_pillar in good_day_male:
+            day_zg = result['zanggan'].get('day', {}).get('zanggan', [])
+            if day_zg and day_zg[0]['gan_char'] in [zheng_cai, pian_cai]:
+                hunyin_section['content'].append(
+                    f'✅ {day_pillar}日柱为佳配，夫妻星（{day_zg[0]["gan_char"]}）在夫妻宫本气，配偶条件好。'
+                )
+    
+    sections.append(hunyin_section)
+    
+    # ===== 6. 综合分析 =====
     summary_section = {
-        'title': '四、综合分析结论',
+        'title': '五、综合分析结论',
         'content': [],
     }
     
