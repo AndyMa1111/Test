@@ -9,7 +9,7 @@ import os
 import threading
 from datetime import datetime, timezone
 
-DB_PATH = os.path.expanduser("~/.hermes/bazi_orders.db")
+DB_PATH = os.environ.get("ORDERS_DB_PATH") or os.path.expanduser("~/.hermes/bazi_orders.db")
 _local = threading.local()
 
 
