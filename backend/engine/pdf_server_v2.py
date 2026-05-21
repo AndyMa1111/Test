@@ -28,6 +28,22 @@ ZHI_ELEM = {
     '辰': (139, 109, 3), '戌': (139, 109, 3), '丑': (139, 109, 3),  # 土
 }
 FONT_PATH = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
+# Fallback: download font if missing (Render, Docker, etc.)
+if not os.path.exists(FONT_PATH):
+    import urllib.request
+    _font_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+    _bundled = os.path.join(_font_dir, "wqy-zenhei.ttc")
+    if os.path.exists(_bundled):
+        FONT_PATH = _bundled
+    else:
+        # Download the font from Debian package mirror
+        try:
+            _url = "https://raw.githubusercontent.com/anthonyfok/fonts-wqy-zenhei/master/wqy-zenhei.ttc"
+            urllib.request.urlretrieve(_url, _bundled)
+            if os.path.exists(_bundled):
+                FONT_PATH = _bundled
+        except Exception:
+            pass  # will fail gracefully in fpdf2 later
 
 
 def _sub_title(pdf, text):
