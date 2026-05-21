@@ -1099,7 +1099,7 @@
         </button>
         <p style="font-size:0.78rem;color:#999;margin-top:6px;">AI 深度分析命局，生成详细解读报告（约15秒）</p>
         <div id="pdf-btn-row" class="pdf-btn-row" style="margin-top:10px;">
-          <button onclick="downloadPDF()" class="btn btn-success" style="font-size:0.9rem;">
+          <button onclick="downloadPDF(event)" class="btn btn-success" style="font-size:0.9rem;">
             📥 下载 PDF
           </button>
           <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">如移动端无法下载，请在 PC 端浏览器中打开下载</p>
@@ -1672,11 +1672,11 @@ function renderTiaohou(tiaohou, qiongtongText, tiyaoEntry) {
   container.innerHTML = html;
 }
 
-function downloadPDF() {
+function downloadPDF(event) {
   var r = window._lastDeepResult;
   if (!r) return;
 
-  var btn = event.target || document.querySelector('#pdf-btn-row button');
+  var btn = (event && event.target) || document.querySelector('#pdf-btn-row button');
   btn.textContent = '⏳ 生成中...';
   btn.disabled = true;
 
