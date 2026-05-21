@@ -7,7 +7,7 @@ import os
 import time
 from typing import Optional
 
-CACHE_FILE = os.path.expanduser("~/.hermes/bazi_cache.json")
+CACHE_FILE = os.environ.get("BAZI_CACHE_PATH") or os.path.expanduser("~/.hermes/bazi_cache.json")
 MAX_ENTRIES = 200  # 最多缓存200条
 
 
